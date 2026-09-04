@@ -69,3 +69,7 @@ LFO paths differ between code versions even with the same seed.
   half-time jungle drop, fat slide bass, FM-pluck motif, blips in 5/8,
   a distorted strummed-guitar wall, and a bitcrush disintegration arc;
   just intonation on E.
+- **polymeter-3** — a rhythmicon at 170: nine plucky voices, voice n
+  playing n hits per bar on the first n harmonics of E, entering one by
+  one and leaving FIFO; stated twice — first locked to the downbeat,
+  then with rates floored to powers of two so the patterns phase.
