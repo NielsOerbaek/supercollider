@@ -22,7 +22,7 @@
 	var toneAmp   = 0.4;
 	var blipAmp   = 0.55;
 	var glitchAmp = 0.4;
-	var screechAmp = 0.07;
+	var screechAmp = 0.10;
 	var droneAmp  = 0.10;
 	var revMix    = 0.15;
 
