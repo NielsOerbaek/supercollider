@@ -102,7 +102,7 @@
 	drumsCrushed = (Latch.ar(drums,
 		Impulse.ar(LFNoise2.kr(0.5).exprange(1500, 8000) * (1 - (0.93 * outroRamp))))
 		.round(2 ** (LFNoise2.kr(0.4).range(3.5, 5.5) - (2.5 * outroRamp)).neg * 2) * 5).tanh * 0.8;
-	drumCrushMix = (Lag.kr(gateB, 0.5) * 0.75).max(outroRamp);
+	drumCrushMix = (Lag.kr(gateB, 0.5) * 0.6).max(outroRamp);
 	drums = (drums * (1 - drumCrushMix)) + (drumsCrushed * drumCrushMix);
 
 	// ---- bass, from bar 16: fat and distorted, four even hits per bar ----
@@ -174,9 +174,9 @@
 	// decorrelation is what makes the room feel large
 	strumTrig = [Impulse.ar(LFNoise2.kr(0.3).range(11, 15)),
 		Impulse.ar(LFNoise2.kr(0.27).range(11.5, 15.5))];
-	// the guitar's own evolution across section B (drop -> bar 84):
-	// a high B5 string gradually joins, and the layer bitcrushes deeper
-	gtrRamp = ((elapsed - (576 * e8)) / (432 * e8)).clip(0, 1);
+	// the guitar's own evolution (entry at bar 56 -> bar 84): a high B5
+	// string gradually joins, and the layer bitcrushes deeper
+	gtrRamp = ((elapsed - (672 * e8)) / (336 * e8)).clip(0, 1);
 	strings = [0, 1].collect { |chan|
 		var sum = [4, 6, 8].collect { |ratio, i|
 			var trig = DelayN.ar(strumTrig[chan], 0.04, i * 0.006);
@@ -206,7 +206,10 @@
 	side = (screech[0] - screech[1]) * 0.5 * 1.8;
 	screech = [mid + side, mid - side]
 	* (1 - (0.5 * Decay2.ar(kickTrig, 0.005, 0.25)))
-	* EnvGen.kr(Env.asr(4, 1, 4), gateB) * screechAmp;
+	// enters 8 bars after the drop, fading in over a further 8 bars (~17 s).
+	// the +5 curve keeps it near-inaudible for most of the fade and blooms
+	// late — a true slow fade (the default -4 curve rises almost instantly)
+	* EnvGen.kr(Env.asr(96 * e8, 1, 4, 5), elapsed >= (672 * e8)) * screechAmp;
 
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
 	// wander on independent slow random walks — echoes drift around the
