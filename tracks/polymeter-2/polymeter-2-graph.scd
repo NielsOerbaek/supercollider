@@ -21,12 +21,12 @@
 	var toneAmp   = 0.4;
 	var blipAmp   = 0.55;
 	var glitchAmp = 0.4;
-	var screechAmp = 0.25;
-	var droneAmp  = 0.05;
+	var screechAmp = 0.10;
+	var droneAmp  = 0.15;
 	var revMix    = 0.15;
 
 	var gateA, gateB, clk16, kickTrig, snareTrig, hatTrig, kick, snare, hat, drums;
-	var burstGate, burstTrig, snare2;
+	var burstGate, burstTrig, snare2, drumsCrushed, drumCrushMix;
 	var wid, mid, side, revAmt;
 	var bassTrig, bassSlideTrig, bassSlide, bassF, bass;
 	var toneTrig, toneF, tone;
@@ -82,6 +82,16 @@
 	* Decay2.ar(burstTrig * TRand.ar(0.25, 1, burstTrig), 0.001, 0.05) * 0.8;
 
 	drums = (kick + snare + snare2 + (hat * 0.6)) * drumAmp;
+
+	// on the drop, the drums get their own crusher: latch-downsampled at a
+	// wandering rate, quantized to ~4 bits, driven hard — 75% wet in
+	// section B, dry everywhere else (the 25% dry keeps the kick's punch).
+	// the stutter glitch taps `drums` after this, so it chews the crushed
+	// version too
+	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(1500, 8000)))
+		.round(2 ** (LFNoise2.kr(0.4).range(3.5, 5.5)).neg * 2) * 5).tanh * 0.8;
+	drumCrushMix = Lag.kr(gateB, 0.5) * 0.75;
+	drums = (drums * (1 - drumCrushMix)) + (drumsCrushed * drumCrushMix);
 
 	// ---- bass, from bar 16: fat and distorted, four even hits per bar ----
 	// on eighths 1-4-7-10 (dotted quarters); the fourth hit of every bar
@@ -145,7 +155,7 @@
 	// tanh-distorted, and ducked by every kick so the wall breathes
 	screech = RLPF.ar(WhiteNoise.ar(0.3 ! 2),
 		[LFNoise2.kr(0.35).exprange(700, 5000), LFNoise2.kr(0.42).exprange(900, 5600)],
-		0.04);
+		0.34);
 	screech = (screech * 6).tanh
 	* (1 - (0.6 * Decay2.ar(kickTrig, 0.005, 0.25)))
 	* EnvGen.kr(Env.asr(4, 1, 4), gateB) * screechAmp;
