@@ -1,0 +1,4 @@
+# rendered audio stays out of git
+tracks/*/renders/
+tracks/*/render.wav
+tracks/*/nrt.osc
