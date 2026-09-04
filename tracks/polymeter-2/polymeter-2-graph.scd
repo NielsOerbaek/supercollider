@@ -11,7 +11,7 @@
 	var q = 170/60;              // tempo: quarter = 170
 	var e8 = 1 / (q * 2);        // eighth-note duration in seconds
 	var clk = Impulse.ar(q * 2); // the eighth-note clock
-	var total = 1008 * e8;       // 84 bars of 12/8 — the full-mix arc (~2:58)
+	var total = 912 * e8;        // 76 bars of 12/8 — the full-mix arc (~2:41)
 	var outroLen = 192 * e8;     // 16 more bars: the crushed drums alone, dissolving
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — JI fundamental, same family as track 1
@@ -39,19 +39,19 @@
 	var btRamp, btBus, btCrushed, strumTrig, strings, gtrRamp;
 
 	// ---- drums: the track-1 drum rack, two sections ----
-	// A (start to bar 32): syncopated 12/8 on a 3+3+2+2+2 carve-up.
-	// Then 16 drumless bars (32-48) where bass/tone/blips/glitches run alone.
-	// B (bar 48 on): half-time jungle two-step on the 16th grid. One pattern
+	// A (start to bar 24): syncopated 12/8 on a 3+3+2+2+2 carve-up.
+	// Then 16 drumless bars (24-40) where bass/tone/blips/glitches run alone.
+	// B (bar 40 on): half-time jungle two-step on the 16th grid. One pattern
 	// stretched over 2 bars of 12/8 = 48 sixteenths = exactly the first
 	// 3 bars of 4/4, so the classic kick-1 / snare-2-and-4 shape (with
 	// per-bar ghost variations) tiles our meter without truncation.
 	RandSeed.ir(1, 20260904); // seed the random UGens: renders reproduce
-	gateA = elapsed < (384 * e8);
-	gateB = elapsed >= (576 * e8);
+	gateA = elapsed < (288 * e8);
+	gateB = elapsed >= (480 * e8);
 	clk16 = Impulse.ar(q * 4);
-	// the two naked bars before the drop (bars 46-48): blips and glitches
+	// the two naked bars before the drop (bars 38-40): blips and glitches
 	// fall away, leaving bass + tone alone under maximum disintegration
-	preDrop = (elapsed >= (552 * e8)) * (elapsed < (576 * e8));
+	preDrop = (elapsed >= (456 * e8)) * (elapsed < (480 * e8));
 	// climbs 0 -> 1 across the first 12 outro bars: drives the drum crush
 	// to total dissolution after the rest of the mix has left
 	outroRamp = ((elapsed - total) / (144 * e8)).clip(0, 1);
@@ -105,11 +105,11 @@
 	drumCrushMix = (Lag.kr(gateB, 0.5) * 0.6).max(outroRamp);
 	drums = (drums * (1 - drumCrushMix)) + (drumsCrushed * drumCrushMix);
 
-	// ---- bass, from bar 16: fat and distorted, four even hits per bar ----
+	// ---- bass, from bar 8: fat and distorted, four even hits per bar ----
 	// on eighths 1-4-7-10 (dotted quarters); the fourth hit of every bar
 	// slides down an octave, then the pitch snaps back for the downbeat
 	bassTrig = clk * Demand.ar(clk, 0, Dseq([1,0,0, 0.9,0,0, 0.9,0,0, 1,0,0], inf))
-	* (elapsed >= (192 * e8));
+	* (elapsed >= (96 * e8));
 	bassSlideTrig = TDuty.ar(Dseq([9 * e8, Dseq([12 * e8], inf)], 1), 0, 1, 0, 1);
 	bassSlide = EnvGen.ar(
 		Env([1, 1, 0.5, 1], [0.06, (3 * e8) - 0.16, 0.1], [0, -4, 0]),
@@ -121,7 +121,7 @@
 	* Decay2.ar(bassTrig, 0.01, 0.45);
 	bass  = (bass * 8).tanh * bassAmp; // hard tanh drive = the fat
 
-	// ---- tone, from bar 24: an FM pluck with a signature — the rhythm is ----
+	// ---- tone, from bar 16: an FM pluck with a signature — the rhythm is ----
 	// 1, 2-and, 5-and, 7, 8-and, 11-and (3+6+3+3+6+3 of the 24 sixteenths)
 	// and the pitch advances only on hits through a fixed six-note motif:
 	// E3 B3 G3 E3 E4 B3 (pure JI ratios). The FM index envelope gives it a
@@ -129,7 +129,7 @@
 	// moving blip delay below.
 	toneTrig = Impulse.ar(q * 4) * Demand.ar(Impulse.ar(q * 4), 0,
 		Dseq([1,0,0,0.8, 0,0,0,0,0, 0.9,0,0, 1,0,0,0.9, 0,0,0,0,0, 0.8,0,0], inf))
-	* (elapsed >= (288 * e8));
+	* (elapsed >= (192 * e8));
 	toneF = fund * Demand.ar(toneTrig, 0, Dseq([2, 3, 12/5, 2, 4, 3], inf));
 	tone = SinOsc.ar(toneF,
 		SinOsc.ar(toneF * 2) * (2.5 * Decay2.ar(toneTrig, 0.001, 0.08)),
@@ -153,7 +153,7 @@
 	// zaps: random-pitched resonant noise stabs on an irregular Dust clock;
 	// stutter: the mix latched at collapsing sample rates, in short bursts;
 	// clicks: thin dust up top
-	glitchEnv = EnvGen.kr(Env.asr(6, 1, 4), elapsed >= (192 * e8))
+	glitchEnv = EnvGen.kr(Env.asr(6, 1, 4), elapsed >= (120 * e8))
 	* (1 - preDrop.lag(0.2)); // glitches also clear out for the naked bars
 	zapTrig = Dust.ar(LFNoise2.kr(0.11).range(0.4, 2.5));
 	zap = BPF.ar(WhiteNoise.ar(4), TExpRand.ar(400, 6000, zapTrig), 0.15)
@@ -174,9 +174,9 @@
 	// decorrelation is what makes the room feel large
 	strumTrig = [Impulse.ar(LFNoise2.kr(0.3).range(11, 15)),
 		Impulse.ar(LFNoise2.kr(0.27).range(11.5, 15.5))];
-	// the guitar's own evolution (entry at bar 56 -> bar 84): a high B5
+	// the guitar's own evolution (entry at bar 48 -> bar 76): a high B5
 	// string gradually joins, and the layer bitcrushes deeper
-	gtrRamp = ((elapsed - (672 * e8)) / (336 * e8)).clip(0, 1);
+	gtrRamp = ((elapsed - (576 * e8)) / (336 * e8)).clip(0, 1);
 	strings = [0, 1].collect { |chan|
 		var sum = [4, 6, 8].collect { |ratio, i|
 			var trig = DelayN.ar(strumTrig[chan], 0.04, i * 0.006);
@@ -209,7 +209,7 @@
 	// enters 8 bars after the drop, fading in over a further 8 bars (~17 s).
 	// the +5 curve keeps it near-inaudible for most of the fade and blooms
 	// late — a true slow fade (the default -4 curve rises almost instantly)
-	* EnvGen.kr(Env.asr(96 * e8, 1, 4, 5), elapsed >= (672 * e8)) * screechAmp;
+	* EnvGen.kr(Env.asr(96 * e8, 1, 4, 5), elapsed >= (576 * e8)) * screechAmp;
 
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
 	// wander on independent slow random walks — echoes drift around the
@@ -235,7 +235,7 @@
 	// and NEVER releases — they carry the disintegration through the drop,
 	// so the drop stacks clean jungle drums on top of still-ruined bass/tone
 	// instead of resetting the intensity
-	btRamp = ((elapsed - (384 * e8)) / (168 * e8)).clip(0, 1);
+	btRamp = ((elapsed - (288 * e8)) / (168 * e8)).clip(0, 1);
 	btBus = (bass ! 2) + Pan2.ar(tone, -0.2, toneAmp);
 	btCrushed = Latch.ar(btBus, Impulse.ar(8000 * (1 - (0.85 * btRamp))))
 	.round(2 ** (8 - (5 * btRamp)).neg * 2);
@@ -252,7 +252,7 @@
 	// crusher wet, coarseness and bit depth all ramp from bar 32 to bar 46,
 	// hold through the two naked pre-drop bars — then vanish at the exact
 	// instant of the drop, so the drop lands clean
-	gapRamp = ((elapsed - (384 * e8)) / (168 * e8)).clip(0, 1) * (elapsed < (576 * e8));
+	gapRamp = ((elapsed - (288 * e8)) / (168 * e8)).clip(0, 1) * (elapsed < (480 * e8));
 	gapCrushed = Latch.ar(mix, Impulse.ar(9000 * (1 - (0.88 * gapRamp))))
 	.round(2 ** (8 - (5.5 * gapRamp)).neg * 2);
 	mix = (mix * (1 - (0.7 * gapRamp))) + (gapCrushed * (0.7 * gapRamp));
@@ -268,7 +268,7 @@
 	mix  = LPF.ar(mix, LFNoise2.kr(0.03).exprange(4500, 16000));
 	// general saturation on the whole mix — leans harder after the drop
 	mix  = (mix * (1.6 + (0.9 * Lag.kr(gateB, 2)))).tanh * 0.55;
-	revAmt = revMix * (1 + ((elapsed >= (384 * e8)) * (elapsed < (576 * e8))).lag(5));
+	revAmt = revMix * (1 + ((elapsed >= (288 * e8)) * (elapsed < (480 * e8))).lag(5));
 	mix = FreeVerb.ar(mix, revAmt, 0.6, 0.35);
 	// very gentle glue compression; loudness normalization is in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.15;
