@@ -24,7 +24,9 @@
 	var droneAmp  = 0.05;
 	var revMix    = 0.15;
 
-	var gateA, gateB, kickTrig, snareTrig, hatTrig, kick, snare, hat, drums;
+	var gateA, gateB, clk16, kickTrig, snareTrig, hatTrig, kick, snare, hat, drums;
+	var burstGate, burstTrig, snare2;
+	var wid, mid, side, revAmt;
 	var bassTrig, bassSlideTrig, bassSlide, bassF, bass;
 	var toneTrig, tone;
 	var blipClk, blipTrig, blipRatio, blipF, blipDry, blipDel, blip;
@@ -34,16 +36,32 @@
 	// ---- drums: the track-1 drum rack, two sections ----
 	// A (start to bar 32): syncopated 12/8 on a 3+3+2+2+2 carve-up.
 	// Then 16 drumless bars (32-48) where bass/tone/blips/glitches run alone.
-	// B (bar 48 on): hectic — snare hammering every even eighth
-	// (2,4,6,8,10,12), busier kick, denser hats.
+	// B (bar 48 on): half-time jungle two-step on the 16th grid. One pattern
+	// stretched over 2 bars of 12/8 = 48 sixteenths = exactly the first
+	// 3 bars of 4/4, so the classic kick-1 / snare-2-and-4 shape (with
+	// per-bar ghost variations) tiles our meter without truncation.
+	RandSeed.ir(1, 20260904); // seed the random UGens: renders reproduce
 	gateA = elapsed < (384 * e8);
 	gateB = elapsed >= (576 * e8);
-	kickTrig = clk * ((gateA * Demand.ar(clk, 0, Dseq([1,  0,  0,  0.7,0,  0,  0,  0.9,0,  0.5,0,  0  ], inf)))
-		+ (gateB * Demand.ar(clk, 0, Dseq([1,  0,  0.6,0,  0.8,0,  0.7,0,  0.9,0,  0.6,0.8], inf))));
-	snareTrig = clk * ((gateA * Demand.ar(clk, 0, Dseq([0,  0,  0.4,0,  0,  1,  0,  0,  0.3,0,  1,  0.5], inf)))
-		+ (gateB * Demand.ar(clk, 0, Dseq([0,  0.8,0,  1,  0,  0.8,0,  1,  0,  0.8,0,  1  ], inf))));
-	hatTrig = clk * ((gateA * Demand.ar(clk, 0, Dseq([0.9,0.3,0.5,0.9,0.3,0.5,0.9,0.4,0.9,0.4,0.9,0.6], inf)))
-		+ (gateB * Demand.ar(clk, 0, Dseq([0.9,0.6,0.8,0.6,0.9,0.6,0.8,0.6,0.9,0.6,0.8,0.6], inf))));
+	clk16 = Impulse.ar(q * 4);
+	kickTrig = (clk * gateA * Demand.ar(clk, 0,
+		Dseq([1,  0,  0,  0.7,0,  0,  0,  0.9,0,  0.5,0,  0  ], inf)))
+	+ (clk16 * gateB * Demand.ar(clk16, 0, Dseq([
+		1,0,0,0,   0,0,0,0,   0,0,1,0,   0,0,0,0,
+		1,0,0,0,   0,0,0,0,   0,0,1,0,   0,0,0.7,0,
+		1,0,0,0.6, 0,0,0,0,   0,0,1,0,   0,0,0,0  ], inf)));
+	snareTrig = (clk * gateA * Demand.ar(clk, 0,
+		Dseq([0,  0,  0.4,0,  0,  1,  0,  0,  0.3,0,  1,  0.5], inf)))
+	+ (clk16 * gateB * Demand.ar(clk16, 0, Dseq([
+		0,0,0,0,   1,0,0,0,   0,0,0,0.4, 1,0,0,0,
+		0,0,0,0,   1,0,0,0.3, 0,0,0,0,   1,0,0,0.4,
+		0,0,0,0,   1,0,0,0,   0,0.4,0,0, 1,0,0.3,0 ], inf)));
+	hatTrig = (clk * gateA * Demand.ar(clk, 0,
+		Dseq([0.9,0.3,0.5,0.9,0.3,0.5,0.9,0.4,0.9,0.4,0.9,0.6], inf)))
+	+ (clk16 * gateB * Demand.ar(clk16, 0, Dseq([
+		0.8,0.2,0.4,0.3, 0.7,0.2,0.5,0.2, 0.8,0.3,0.4,0.2, 0.7,0.2,0.5,0.3,
+		0.8,0.2,0.4,0.3, 0.7,0.2,0.5,0.2, 0.8,0.3,0.4,0.2, 0.7,0.2,0.5,0.3,
+		0.8,0.2,0.4,0.3, 0.7,0.2,0.5,0.2, 0.8,0.3,0.4,0.2, 0.7,0.2,0.5,0.3 ], inf)));
 
 	// kick tuned to E1 with a fast pitch drop + click; snare body at 9/4
 	kick  = (SinOsc.ar(fund * 0.5 * (1 + (8 * Decay2.ar(kickTrig, 0.001, 0.07))),
@@ -52,7 +70,16 @@
 	snare = WhiteNoise.ar(Decay2.ar(snareTrig, 0.005, 0.16))
 	+ SinOsc.ar(fund * 9/4, 0, Decay2.ar(snareTrig, 0.005, 0.09));
 	hat   = HPF.ar(WhiteNoise.ar(Decay2.ar(hatTrig, 0.002, 0.05)), 9000);
-	drums = (kick + snare + (hat * 0.6)) * drumAmp;
+
+	// second, brighter snare: hectic randomized 32nd-note bursts (seeded
+	// above, so every render is identical), section B only. Dust opens
+	// short burst windows; TRand varies each hit inside them.
+	burstGate = Trig.ar(Dust.ar(0.45), 0.21);
+	burstTrig = Impulse.ar(q * 8) * burstGate * gateB;
+	snare2 = (HPF.ar(WhiteNoise.ar, 2500) + BPF.ar(WhiteNoise.ar(2), 3800, 0.3))
+	* Decay2.ar(burstTrig * TRand.ar(0.25, 1, burstTrig), 0.001, 0.05) * 0.8;
+
+	drums = (kick + snare + snare2 + (hat * 0.6)) * drumAmp;
 
 	// ---- bass, from bar 16: fat and distorted, four even hits per bar ----
 	// on eighths 1-4-7-10 (dotted quarters); the fourth hit of every bar
@@ -64,8 +91,9 @@
 		Env([1, 1, 0.5, 1], [0.06, (3 * e8) - 0.16, 0.1], [0, -4, 0]),
 		bassSlideTrig);
 	bassF = fund * bassSlide;
+	// longitudinal: the filter's overall brightness opens across the track
 	bass  = MoogFF.ar(Saw.ar(bassF * [1, 1.004]).sum + SinOsc.ar(bassF * 0.5),
-		bassF * (3 + (6 * Decay2.ar(bassTrig, 0.005, 0.3))), 2.8)
+		bassF * (3 + (6 * Decay2.ar(bassTrig, 0.005, 0.3))) * Line.kr(0.75, 1.8, total), 2.8)
 	* Decay2.ar(bassTrig, 0.01, 0.45);
 	bass  = (bass * 8).tanh * bassAmp; // hard tanh drive = the fat
 
@@ -107,8 +135,9 @@
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
 	// wander on independent slow random walks — echoes drift around the
 	// stereo field and detach rhythmically from their sources
-	blipDel   = CombL.ar(blipDry + (tone * 0.6), 0.7, LFNoise2.kr(0.08).range(e8 * 1.5, e8 * 4.5), 1.5);
-	glitchDel = CombL.ar(glitch, 0.5, LFNoise2.kr(0.15).range(e8 * 0.75, e8 * 3), 1.2);
+	// longitudinal: both delay tails lengthen slowly across the whole track
+	blipDel   = CombL.ar(blipDry + (tone * 0.6), 0.7, LFNoise2.kr(0.08).range(e8 * 1.5, e8 * 4.5), Line.kr(1, 3.5, total));
+	glitchDel = CombL.ar(glitch, 0.5, LFNoise2.kr(0.15).range(e8 * 0.75, e8 * 3), Line.kr(0.8, 2.5, total));
 	blip = (Pan2.ar(blipDry, LFNoise2.kr(0.25) * 0.7)
 		+ Pan2.ar(blipDel, LFNoise2.kr(0.21) * 0.9, 0.6)) * blipAmp;
 	glitch = (Pan2.ar(glitch, LFNoise2.kr(0.4) * 0.8)
@@ -118,7 +147,18 @@
 	drone = (SinOsc.ar(fund * 0.5) + (SinOsc.ar(fund) * 0.4)) * droneAmp;
 
 	mix = ((drums + bass + drone) ! 2) + Pan2.ar(tone, -0.2, toneAmp) + blip + glitch;
-	mix = FreeVerb.ar(mix, revMix, 0.6, 0.35);
+
+	// ---- longitudinal motion on the main mix ----
+	// stereo width breathes on a very slow random walk; a drifting master
+	// tilt filter dulls and reopens the top end over minutes; the reverb
+	// swells to double depth through the drumless stretch and eases back
+	wid  = LFNoise2.kr(0.025).range(0.65, 1.3);
+	mid  = (mix[0] + mix[1]) * 0.5;
+	side = (mix[0] - mix[1]) * 0.5 * wid;
+	mix  = [mid + side, mid - side];
+	mix  = LPF.ar(mix, LFNoise2.kr(0.03).exprange(4500, 16000));
+	revAmt = revMix * (1 + ((elapsed >= (384 * e8)) * (elapsed < (576 * e8))).lag(5));
+	mix = FreeVerb.ar(mix, revAmt, 0.6, 0.35);
 	// very gentle glue compression; loudness normalization is in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.15;
 	master = EnvGen.kr(Env([1, 1, 0], [total - 8, 8], [0, -3]), doneAction: 2);
