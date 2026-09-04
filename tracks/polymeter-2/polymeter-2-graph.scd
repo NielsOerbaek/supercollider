@@ -21,6 +21,7 @@
 	var toneAmp   = 0.4;
 	var blipAmp   = 0.55;
 	var glitchAmp = 0.4;
+	var screechAmp = 0.25;
 	var droneAmp  = 0.05;
 	var revMix    = 0.15;
 
@@ -28,7 +29,8 @@
 	var burstGate, burstTrig, snare2;
 	var wid, mid, side, revAmt;
 	var bassTrig, bassSlideTrig, bassSlide, bassF, bass;
-	var toneTrig, tone;
+	var toneTrig, toneF, tone;
+	var screech;
 	var blipClk, blipTrig, blipRatio, blipF, blipDry, blipDel, blip;
 	var zapTrig, zap, stutter, clicks, glitch, glitchEnv, glitchDel;
 	var drone, mix, master;
@@ -97,14 +99,20 @@
 	* Decay2.ar(bassTrig, 0.01, 0.45);
 	bass  = (bass * 8).tanh * bassAmp; // hard tanh drive = the fat
 
-	// ---- lighter tone, from bar 24: a soft E3 pluck on the 16th grid at ----
-	// 1, 2-and, 5-and, 7, 8-and, 11-and — a symmetric 3+6+3+3+6+3 carve-up
-	// of the 24 sixteenths. It also feeds the moving blip delay below.
+	// ---- tone, from bar 24: an FM pluck with a signature — the rhythm is ----
+	// 1, 2-and, 5-and, 7, 8-and, 11-and (3+6+3+3+6+3 of the 24 sixteenths)
+	// and the pitch advances only on hits through a fixed six-note motif:
+	// E3 B3 G3 E3 E4 B3 (pure JI ratios). The FM index envelope gives it a
+	// bright kalimba-ish bite; the noise tick is the attack. Feeds the
+	// moving blip delay below.
 	toneTrig = Impulse.ar(q * 4) * Demand.ar(Impulse.ar(q * 4), 0,
 		Dseq([1,0,0,0.8, 0,0,0,0,0, 0.9,0,0, 1,0,0,0.9, 0,0,0,0,0, 0.8,0,0], inf))
 	* (elapsed >= (288 * e8));
-	tone = SinOsc.ar(fund * 2, 0, Decay2.ar(toneTrig, 0.004, 0.18))
-	+ (Pulse.ar(fund * 2, 0.3, Decay2.ar(toneTrig, 0.004, 0.07)) * 0.25);
+	toneF = fund * Demand.ar(toneTrig, 0, Dseq([2, 3, 12/5, 2, 4, 3], inf));
+	tone = SinOsc.ar(toneF,
+		SinOsc.ar(toneF * 2) * (2.5 * Decay2.ar(toneTrig, 0.001, 0.08)),
+		Decay2.ar(toneTrig, 0.002, 0.25))
+	+ (HPF.ar(WhiteNoise.ar(Decay2.ar(toneTrig, 0.001, 0.01)), 3000) * 0.3);
 
 	// ---- blips: sixteenth-note plinks on a 10-step (5/8) cycle that ----
 	// rotates against the 12/8 bar; high JI ratios of E. Enters at bar 4.
@@ -132,6 +140,16 @@
 	clicks = HPF.ar(Dust2.ar(3), 4000) * 0.4;
 	glitch = (zap + stutter + clicks) * glitchEnv;
 
+	// ---- screech, arriving with the bar-48 drop: two screaming ----
+	// high-resonance filters on noise, wandering independently per channel,
+	// tanh-distorted, and ducked by every kick so the wall breathes
+	screech = RLPF.ar(WhiteNoise.ar(0.3 ! 2),
+		[LFNoise2.kr(0.35).exprange(700, 5000), LFNoise2.kr(0.42).exprange(900, 5600)],
+		0.04);
+	screech = (screech * 6).tanh
+	* (1 - (0.6 * Decay2.ar(kickTrig, 0.005, 0.25)))
+	* EnvGen.kr(Env.asr(4, 1, 4), gateB) * screechAmp;
+
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
 	// wander on independent slow random walks — echoes drift around the
 	// stereo field and detach rhythmically from their sources
@@ -146,7 +164,8 @@
 	// quiet root drone so the JI blips have a floor
 	drone = (SinOsc.ar(fund * 0.5) + (SinOsc.ar(fund) * 0.4)) * droneAmp;
 
-	mix = ((drums + bass + drone) ! 2) + Pan2.ar(tone, -0.2, toneAmp) + blip + glitch;
+	mix = ((drums + bass + drone) ! 2) + Pan2.ar(tone, -0.2, toneAmp) + blip + glitch
+	+ screech;
 
 	// ---- longitudinal motion on the main mix ----
 	// stereo width breathes on a very slow random walk; a drifting master
@@ -157,6 +176,8 @@
 	side = (mix[0] - mix[1]) * 0.5 * wid;
 	mix  = [mid + side, mid - side];
 	mix  = LPF.ar(mix, LFNoise2.kr(0.03).exprange(4500, 16000));
+	// general saturation on the whole mix — leans harder after the drop
+	mix  = (mix * (1.6 + (0.9 * Lag.kr(gateB, 2)))).tanh * 0.55;
 	revAmt = revMix * (1 + ((elapsed >= (384 * e8)) * (elapsed < (576 * e8))).lag(5));
 	mix = FreeVerb.ar(mix, revAmt, 0.6, 0.35);
 	// very gentle glue compression; loudness normalization is in make_mp3.sh
