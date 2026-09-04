@@ -45,4 +45,16 @@ to section 2's bass-pluck restart.*
 
 > commit and push
 
+*Committed as 444b0f3.*
+
+> Let's to an overlap. voice one enters as the last voices of section one
+> finishes up. So voice 2 enters when section 1 ends.
+
+*The sections dovetailed: the section-2 bass pluck enters under the still-
+ticking section-1 duo, which stops exactly as voice 2 arrives. Required
+moving the section switch from one global cutoff to per-voice gates and
+pitch-stream crossfades.*
+
+> commit and push
+
 *This commit.*

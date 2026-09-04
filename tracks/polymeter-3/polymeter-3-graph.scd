@@ -15,9 +15,10 @@
 // (full realignment: every 315 bars — never, within this piece).
 // Both sections end the same way — FIFO: voices leave in the order they
 // arrived, every 4 bars, until only the two lightest (glass and tick)
-// remain. In section 1 that duo hands off directly to the section-2
-// reset; at the end of section 2 they phase alone to the close. The
-// piece builds heavy-to-light and dies heavy-to-light, twice.
+// remain. The sections overlap: section 2's bass pluck enters while the
+// section-1 duo still ticks, and the duo stops exactly as voice 2
+// arrives. At the end of section 2 the duo phases alone to the close.
+// The piece builds heavy-to-light and dies heavy-to-light, twice.
 
 {
 	var q = 170/60;              // tempo: quarter = 170
@@ -78,23 +79,26 @@
 	// (10 ms of gate grace so entry hits aren't lost to control-block
 	// timing; the .max(20) guards Pluck's 1/freq against any zero.)
 	// FIFO in both sections: voice i leaves at fifoBar + 4i (voice 1 first,
-	// every 4 bars); voices 8 and 9 never FIFO out — in section 1 they run
-	// until the reset, in section 2 until the end of the piece
+	// every 4 bars). Voices 8 and 9 never FIFO out — in section 1 they run
+	// 8 bars INTO section 2 (overlapping its bass re-entry, stopping just
+	// as voice 2 arrives); in section 2 they run to the end of the piece.
+	// Each voice switches its pitch stream from the sec-1 to the sec-2
+	// Demand at its own sec-1 exit (the streams never overlap per voice).
 	voices = 9.collect { |i|
 		var n = i + 1;
 		var p = (2 ** n.log2.floor).asInteger;
-		var exit1Bar = if(i < 7) { fifo1Bar + (i * 4) } { sec2Bar };
+		var exit1Bar = if(i < 7) { fifo1Bar + (i * 4) } { sec2Bar + 8 };
 		var exit2Bar = if(i < 7) { fifo2Bar + (i * 4) } { 10000 };
-		var g2 = elapsed >= ((sec2Bar * barDur) - 0.02);
+		var gsw = elapsed >= (exit1Bar * barDur);
 		var trig1 = Impulse.ar(n / barDur)
-		* (elapsed >= ((i * 8 * barDur) - 0.01)) * (1 - g2)
+		* (elapsed >= ((i * 8 * barDur) - 0.01))
 		* (elapsed < (exit1Bar * barDur));
 		var trig2 = Impulse.ar(p / barDur)
 		* (elapsed >= (((sec2Bar + (i * 8)) * barDur) - 0.01))
 		* (elapsed < (exit2Bar * barDur));
 		var f1 = Demand.ar(trig1, 0, Dseq((1..n), inf)) * fund;
 		var f2 = Demand.ar(trig2, 0, Dseq((1..n), inf)) * fund;
-		var freq = ((f1 * (1 - g2)) + (f2 * g2)).max(20);
+		var freq = ((f1 * (1 - gsw)) + (f2 * gsw)).max(20);
 		var pan = ((i % 2) * 2 - 1) * (i / 8) * 0.6;
 		Pan2.ar(voiceFuncs[i].value(freq, trig1 + trig2), pan, amps[i])
 	}.sum;
