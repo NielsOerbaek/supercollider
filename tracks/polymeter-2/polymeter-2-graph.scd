@@ -22,8 +22,8 @@
 	var toneAmp   = 0.4;
 	var blipAmp   = 0.55;
 	var glitchAmp = 0.4;
-	var screechAmp = 0.10;
-	var droneAmp  = 0.15;
+	var screechAmp = 0.07;
+	var droneAmp  = 0.10;
 	var revMix    = 0.15;
 
 	var gateA, gateB, clk16, kickTrig, snareTrig, hatTrig, kick, snare, hat, drums;
@@ -36,7 +36,7 @@
 	var zapTrig, zap, stutter, clicks, glitch, glitchEnv, glitchDel;
 	var drone, mix, master;
 	var preDrop, gapRamp, gapCrushed, outroRamp, others, othersFade;
-	var btRamp, btBus, btCrushed, strumTrig, strings;
+	var btRamp, btBus, btCrushed, strumTrig, strings, gtrRamp;
 
 	// ---- drums: the track-1 drum rack, two sections ----
 	// A (start to bar 32): syncopated 12/8 on a 3+3+2+2+2 carve-up.
@@ -169,15 +169,43 @@
 	// a pick across strings), detuned saw pairs into heavy clipping and an
 	// amp-ish bandpass; strum rate wobbles around 12-15 Hz. Haas-widened,
 	// ducked by every kick so it pumps with the beat.
-	strumTrig = Impulse.ar(LFNoise2.kr(0.3).range(11, 15));
-	strings = [4, 6, 8].collect { |ratio, i|
-		var trig = DelayN.ar(strumTrig, 0.02, i * 0.006);
-		Saw.ar(fund * ratio * [1, 1.006]).sum
-		* Decay2.ar(trig, 0.002, 0.09)
-	}.sum;
-	screech = HPF.ar(LPF.ar((strings * 7).tanh, 4500), 250);
-	screech = [screech, DelayN.ar(screech, 0.02, 0.011)]
-	* (1 - (0.6 * Decay2.ar(kickTrig, 0.005, 0.25)))
+	// left and right are two fully independent performances: separate strum
+	// clocks (they drift against each other), wider per-channel detunings —
+	// decorrelation is what makes the room feel large
+	strumTrig = [Impulse.ar(LFNoise2.kr(0.3).range(11, 15)),
+		Impulse.ar(LFNoise2.kr(0.27).range(11.5, 15.5))];
+	// the guitar's own evolution across section B (drop -> bar 84):
+	// a high B5 string gradually joins, and the layer bitcrushes deeper
+	gtrRamp = ((elapsed - (576 * e8)) / (432 * e8)).clip(0, 1);
+	strings = [0, 1].collect { |chan|
+		var sum = [4, 6, 8].collect { |ratio, i|
+			var trig = DelayN.ar(strumTrig[chan], 0.04, i * 0.006);
+			Saw.ar(fund * ratio * [1 + (chan * 0.008), 1.01 - (chan * 0.007)]).sum
+			* Decay2.ar(trig, 0.002, 0.25)
+		}.sum;
+		var hi = Saw.ar(fund * 12 * [1 + (chan * 0.006), 1.009 - (chan * 0.005)]).sum
+		* Decay2.ar(DelayN.ar(strumTrig[chan], 0.04, 0.02), 0.002, 0.2);
+		// pink noise riding each strum — string scrape and amp hiss,
+		// distorted along with the chord so it stops sounding clean
+		sum + (hi * 1.1 * gtrRamp)
+		+ (PinkNoise.ar(2.8) * Decay2.ar(strumTrig[chan], 0.002, 0.38))
+	};
+	// heavy clipping, darker top (distance), then the thematic crusher:
+	// wet, coarseness and bit depth all deepen with gtrRamp
+	screech = HPF.ar(LPF.ar((strings * 14).tanh, 3800), 220);
+	// (the latch rate floors at ~2.4 kHz so the arriving B5 string isn't
+	// aliased away by the very crusher that deepens beneath it)
+	screech = (screech * (1 - (0.65 * gtrRamp)))
+	+ (Latch.ar(screech, Impulse.ar(6000 * (1 - (0.6 * gtrRamp))))
+		.round(2 ** (7 - (4.5 * gtrRamp)).neg * 2) * (0.65 * gtrRamp));
+	// big room, wet-forward, then the side channel expanded 1.8x — the
+	// reverb tails are decorrelated (different inputs per side), so the
+	// widening blows the room open rather than just panning harder
+	screech = (screech * 0.45) + FreeVerb.ar(screech, 1, 0.95, 0.4);
+	mid  = (screech[0] + screech[1]) * 0.5;
+	side = (screech[0] - screech[1]) * 0.5 * 1.8;
+	screech = [mid + side, mid - side]
+	* (1 - (0.5 * Decay2.ar(kickTrig, 0.005, 0.25)))
 	* EnvGen.kr(Env.asr(4, 1, 4), gateB) * screechAmp;
 
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
@@ -210,9 +238,10 @@
 	.round(2 ** (8 - (5 * btRamp)).neg * 2);
 	btBus = (btBus * (1 - (0.75 * btRamp))) + (btCrushed * (0.75 * btRamp));
 
-	// everything except the drums fades out over the first 4 s of the
-	// outro, leaving the crushed drums to dissolve on their own
-	othersFade = EnvGen.kr(Env([1, 1, 0], [total, 4], [0, -2]));
+	// everything except the drums STOPS dead on the downbeat of bar 85 —
+	// no fade — and the drums take it from there. (the 10 ms lag is just
+	// declick, inaudible as a fade)
+	othersFade = (elapsed < total).lag(0.01);
 	others = (drone ! 2) + btBus + blip + glitch + screech;
 	mix = (drums ! 2) + (others * othersFade);
 

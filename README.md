@@ -22,9 +22,43 @@ Renders offline (no audio hardware needed), normalizes to −16 LUFS with a
 flat gain, tags it from `track.conf`, and drops a timestamped mp3 in
 `tracks/<name>/renders/`. With no argument it renders `tracks/polymeter`.
 
-Requires `supercollider` and `ffmpeg` (both via apt).
+## Toolchain & requirements
+
+Everything runs headless — no DAW, no sound card needed for rendering.
+
+- **SuperCollider** (`sudo apt install supercollider`) — `sclang` runs the
+  render script; `scsynth -N` (non-realtime mode, invoked via
+  `Score.recordNRT`) renders the synth graph sample-accurately to
+  `render.wav`, faster than real time. `scide` is the editor for live
+  playback. Developed against 3.13.
+- **ffmpeg** (`sudo apt install ffmpeg`) — two jobs: measures integrated
+  loudness with the `ebur128` filter, then transcodes WAV → mp3
+  (`libmp3lame`, VBR `-q:a 2`) applying one flat `volume` gain to hit
+  −16 LUFS (no dynamic processing) with an `alimiter` safety, and writes
+  the ID3 tags from `track.conf`.
+- **python3** — one line of arithmetic in the gain calculation.
+- **bash** — `make_mp3.sh` glues the above together.
+
+Pipeline per render:
+
+```
+<name>-graph.scd ──(sclang render.scd, scsynth NRT)──> render.wav
+render.wav ──(ffmpeg ebur128: measure LUFS)──> gain
+render.wav ──(ffmpeg: volume + limiter + lame + tags)──> renders/<name>_<stamp>.mp3
+```
+
+Live playback needs working audio (JACK/PipeWire) — on a desktop Ubuntu
+with PipeWire, opening `<name>.scd` in `scide` and pressing Ctrl+Enter
+just works. Graphs seed their random UGens (`RandSeed`), so offline
+renders are bit-for-bit reproducible; note that editing a graph's
+structure reshuffles which random stream each UGen draws, so wandering
+LFO paths differ between code versions even with the same seed.
 
 ## Tracks
 
 - **polymeter** — drums in 5/4, bass in 7/4, arpeggio in 9/8, clap in 4/4,
   all in just intonation on E; after Thor Magnusson's *Drummer* (2006).
+- **polymeter-2** — 12/8 glitch groove at 170: syncopated kit into a
+  half-time jungle drop, fat slide bass, FM-pluck motif, blips in 5/8,
+  a distorted strummed-guitar wall, and a bitcrush disintegration arc;
+  just intonation on E.
