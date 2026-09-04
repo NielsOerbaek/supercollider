@@ -11,7 +11,8 @@
 	var q = 170/60;              // tempo: quarter = 170
 	var e8 = 1 / (q * 2);        // eighth-note duration in seconds
 	var clk = Impulse.ar(q * 2); // the eighth-note clock
-	var total = 1008 * e8;       // 84 bars of 12/8 (~2:58)
+	var total = 1008 * e8;       // 84 bars of 12/8 — the full-mix arc (~2:58)
+	var outroLen = 192 * e8;     // 16 more bars: the crushed drums alone, dissolving
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — JI fundamental, same family as track 1
 
@@ -34,6 +35,8 @@
 	var blipClk, blipTrig, blipRatio, blipF, blipDry, blipDel, blip;
 	var zapTrig, zap, stutter, clicks, glitch, glitchEnv, glitchDel;
 	var drone, mix, master;
+	var preDrop, gapRamp, gapCrushed, outroRamp, others, othersFade;
+	var btRamp, btBus, btCrushed, strumTrig, strings;
 
 	// ---- drums: the track-1 drum rack, two sections ----
 	// A (start to bar 32): syncopated 12/8 on a 3+3+2+2+2 carve-up.
@@ -46,6 +49,12 @@
 	gateA = elapsed < (384 * e8);
 	gateB = elapsed >= (576 * e8);
 	clk16 = Impulse.ar(q * 4);
+	// the two naked bars before the drop (bars 46-48): blips and glitches
+	// fall away, leaving bass + tone alone under maximum disintegration
+	preDrop = (elapsed >= (552 * e8)) * (elapsed < (576 * e8));
+	// climbs 0 -> 1 across the first 12 outro bars: drives the drum crush
+	// to total dissolution after the rest of the mix has left
+	outroRamp = ((elapsed - total) / (144 * e8)).clip(0, 1);
 	kickTrig = (clk * gateA * Demand.ar(clk, 0,
 		Dseq([1,  0,  0,  0.7,0,  0,  0,  0.9,0,  0.5,0,  0  ], inf)))
 	+ (clk16 * gateB * Demand.ar(clk16, 0, Dseq([
@@ -88,9 +97,12 @@
 	// section B, dry everywhere else (the 25% dry keeps the kick's punch).
 	// the stutter glitch taps `drums` after this, so it chews the crushed
 	// version too
-	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(1500, 8000)))
-		.round(2 ** (LFNoise2.kr(0.4).range(3.5, 5.5)).neg * 2) * 5).tanh * 0.8;
-	drumCrushMix = Lag.kr(gateB, 0.5) * 0.75;
+	// in the outro the crusher takes over completely: sample rate collapses
+	// toward gravel, bit depth falls toward 1, wet goes to 100%
+	drumsCrushed = (Latch.ar(drums,
+		Impulse.ar(LFNoise2.kr(0.5).exprange(1500, 8000) * (1 - (0.93 * outroRamp))))
+		.round(2 ** (LFNoise2.kr(0.4).range(3.5, 5.5) - (2.5 * outroRamp)).neg * 2) * 5).tanh * 0.8;
+	drumCrushMix = (Lag.kr(gateB, 0.5) * 0.75).max(outroRamp);
 	drums = (drums * (1 - drumCrushMix)) + (drumsCrushed * drumCrushMix);
 
 	// ---- bass, from bar 16: fat and distorted, four even hits per bar ----
@@ -130,7 +142,7 @@
 	blipClk  = Impulse.ar(q * 4);
 	blipTrig = blipClk * Demand.ar(blipClk, 0,
 		Dseq([1,0,0.7,0, 0.8,0, 0,0.9, 0,0.6], inf))
-	* (elapsed >= (48 * e8));
+	* (elapsed >= (48 * e8)) * (1 - preDrop);
 	blipRatio = Demand.ar(blipClk, 0,
 		Dseq([4, 6, 9, 24/5, 8, 12, 9, 16, 48/5, 6], inf));
 	blipF = fund * blipRatio;
@@ -141,7 +153,8 @@
 	// zaps: random-pitched resonant noise stabs on an irregular Dust clock;
 	// stutter: the mix latched at collapsing sample rates, in short bursts;
 	// clicks: thin dust up top
-	glitchEnv = EnvGen.kr(Env.asr(6, 1, 4), elapsed >= (192 * e8));
+	glitchEnv = EnvGen.kr(Env.asr(6, 1, 4), elapsed >= (192 * e8))
+	* (1 - preDrop.lag(0.2)); // glitches also clear out for the naked bars
 	zapTrig = Dust.ar(LFNoise2.kr(0.11).range(0.4, 2.5));
 	zap = BPF.ar(WhiteNoise.ar(4), TExpRand.ar(400, 6000, zapTrig), 0.15)
 	* Decay2.ar(zapTrig, 0.001, 0.06);
@@ -150,13 +163,20 @@
 	clicks = HPF.ar(Dust2.ar(3), 4000) * 0.4;
 	glitch = (zap + stutter + clicks) * glitchEnv;
 
-	// ---- screech, arriving with the bar-48 drop: two screaming ----
-	// high-resonance filters on noise, wandering independently per channel,
-	// tanh-distorted, and ducked by every kick so the wall breathes
-	screech = RLPF.ar(WhiteNoise.ar(0.3 ! 2),
-		[LFNoise2.kr(0.35).exprange(700, 5000), LFNoise2.kr(0.42).exprange(900, 5600)],
-		0.34);
-	screech = (screech * 6).tanh
+	// ---- "screech" reworked, with the bar-48 drop: a badly distorted ----
+	// guitar strumming as fast as possible on a mid-high chord (E4-B4-E5,
+	// pure JI). Each "string" fires slightly later per strum (the drag of
+	// a pick across strings), detuned saw pairs into heavy clipping and an
+	// amp-ish bandpass; strum rate wobbles around 12-15 Hz. Haas-widened,
+	// ducked by every kick so it pumps with the beat.
+	strumTrig = Impulse.ar(LFNoise2.kr(0.3).range(11, 15));
+	strings = [4, 6, 8].collect { |ratio, i|
+		var trig = DelayN.ar(strumTrig, 0.02, i * 0.006);
+		Saw.ar(fund * ratio * [1, 1.006]).sum
+		* Decay2.ar(trig, 0.002, 0.09)
+	}.sum;
+	screech = HPF.ar(LPF.ar((strings * 7).tanh, 4500), 250);
+	screech = [screech, DelayN.ar(screech, 0.02, 0.011)]
 	* (1 - (0.6 * Decay2.ar(kickTrig, 0.005, 0.25)))
 	* EnvGen.kr(Env.asr(4, 1, 4), gateB) * screechAmp;
 
@@ -164,18 +184,46 @@
 	// wander on independent slow random walks — echoes drift around the
 	// stereo field and detach rhythmically from their sources
 	// longitudinal: both delay tails lengthen slowly across the whole track
-	blipDel   = CombL.ar(blipDry + (tone * 0.6), 0.7, LFNoise2.kr(0.08).range(e8 * 1.5, e8 * 4.5), Line.kr(1, 3.5, total));
-	glitchDel = CombL.ar(glitch, 0.5, LFNoise2.kr(0.15).range(e8 * 0.75, e8 * 3), Line.kr(0.8, 2.5, total));
+	// (maxdelaytime must exceed the wander range's top — an undersized
+	// buffer here reads out of bounds and can produce garbage samples)
+	blipDel   = CombL.ar(blipDry + (tone * 0.6), 1.0, LFNoise2.kr(0.08).range(e8 * 1.5, e8 * 4.5), Line.kr(1, 3.5, total));
+	glitchDel = CombL.ar(glitch, 0.8, LFNoise2.kr(0.15).range(e8 * 0.75, e8 * 3), Line.kr(0.8, 2.5, total));
+	// the whole blip layer (delay tail included) ducks out for the naked
+	// pre-drop bars — gating only the triggers left the echoes ringing
 	blip = (Pan2.ar(blipDry, LFNoise2.kr(0.25) * 0.7)
-		+ Pan2.ar(blipDel, LFNoise2.kr(0.21) * 0.9, 0.6)) * blipAmp;
+		+ Pan2.ar(blipDel, LFNoise2.kr(0.21) * 0.9, 0.6))
+	* (blipAmp * (1 - (preDrop.lag(0.4) * 0.92)));
 	glitch = (Pan2.ar(glitch, LFNoise2.kr(0.4) * 0.8)
 		+ Pan2.ar(glitchDel, LFNoise2.kr(0.33) * 0.9, 0.7)) * glitchAmp;
 
-	// quiet root drone so the JI blips have a floor
-	drone = (SinOsc.ar(fund * 0.5) + (SinOsc.ar(fund) * 0.4)) * droneAmp;
+	// quiet root drone so the JI blips have a floor (ducked in the naked bars)
+	drone = (SinOsc.ar(fund * 0.5) + (SinOsc.ar(fund) * 0.4)) * droneAmp
+	* (1 - (preDrop.lag(0.5) * 0.85));
 
-	mix = ((drums + bass + drone) ! 2) + Pan2.ar(tone, -0.2, toneAmp) + blip + glitch
-	+ screech;
+	// bass + tone get their own crusher whose ramp rises through the gap
+	// and NEVER releases — they carry the disintegration through the drop,
+	// so the drop stacks clean jungle drums on top of still-ruined bass/tone
+	// instead of resetting the intensity
+	btRamp = ((elapsed - (384 * e8)) / (168 * e8)).clip(0, 1);
+	btBus = (bass ! 2) + Pan2.ar(tone, -0.2, toneAmp);
+	btCrushed = Latch.ar(btBus, Impulse.ar(8000 * (1 - (0.85 * btRamp))))
+	.round(2 ** (8 - (5 * btRamp)).neg * 2);
+	btBus = (btBus * (1 - (0.75 * btRamp))) + (btCrushed * (0.75 * btRamp));
+
+	// everything except the drums fades out over the first 4 s of the
+	// outro, leaving the crushed drums to dissolve on their own
+	othersFade = EnvGen.kr(Env([1, 1, 0], [total, 4], [0, -2]));
+	others = (drone ! 2) + btBus + blip + glitch + screech;
+	mix = (drums ! 2) + (others * othersFade);
+
+	// through the drumless stretch the whole mix disintegrates by degrees:
+	// crusher wet, coarseness and bit depth all ramp from bar 32 to bar 46,
+	// hold through the two naked pre-drop bars — then vanish at the exact
+	// instant of the drop, so the drop lands clean
+	gapRamp = ((elapsed - (384 * e8)) / (168 * e8)).clip(0, 1) * (elapsed < (576 * e8));
+	gapCrushed = Latch.ar(mix, Impulse.ar(9000 * (1 - (0.88 * gapRamp))))
+	.round(2 ** (8 - (5.5 * gapRamp)).neg * 2);
+	mix = (mix * (1 - (0.7 * gapRamp))) + (gapCrushed * (0.7 * gapRamp));
 
 	// ---- longitudinal motion on the main mix ----
 	// stereo width breathes on a very slow random walk; a drifting master
@@ -192,6 +240,8 @@
 	mix = FreeVerb.ar(mix, revAmt, 0.6, 0.35);
 	// very gentle glue compression; loudness normalization is in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.15;
-	master = EnvGen.kr(Env([1, 1, 0], [total - 8, 8], [0, -3]), doneAction: 2);
+	// no general fade: the outro IS the crushed drums dissolving; the last
+	// 3 s just ease the remaining dust to silence
+	master = EnvGen.kr(Env([1, 1, 0], [total + outroLen - 3, 3], [0, -3]), doneAction: 2);
 	Limiter.ar(mix * 0.5, 0.9) * master;
 }

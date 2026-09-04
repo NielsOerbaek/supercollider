@@ -5,7 +5,7 @@
 // total length — they determine the render duration.
 (
 var bpm = 170;
-var bars = 84;                                    // 12/8 bars (graph total = bars * 12 eighths)
+var bars = 100;                                   // 84 full-mix + 16 outro bars of 12/8
 var duration = ((bars * 12 * (60 / bpm / 2)) + 3).roundUp;
 
 var dir = thisProcess.nowExecutingPath.notNil.if(
