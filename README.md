@@ -9,8 +9,15 @@ tracks/<name>/
   render.scd        offline renderer (writes render.wav; keep its bpm/length
                     constants in sync with the graph)
   track.conf        mp3 metadata (title / artist / album / comment)
+  SESSION-LOG.md    transparency log: the human/AI conversation that made
+                    the track, with the human's direction quoted verbatim
   renders/          timestamped mp3s
 ```
+
+These tracks are made in collaboration with Claude (Anthropic's Claude
+Fable 5, via Claude Code): musical direction by the human, code by the
+model. Each track's `SESSION-LOG.md` records exactly what that direction
+was.
 
 ## Rendering
 
