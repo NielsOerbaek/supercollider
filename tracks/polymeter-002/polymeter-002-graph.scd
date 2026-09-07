@@ -1,5 +1,5 @@
-// polymeter-2-graph.scd — the single source of truth for the synth graph.
-// Loaded by polymeter-2.scd (live playback) and render.scd (offline render).
+// polymeter-002-graph.scd — the single source of truth for the synth graph.
+// Loaded by polymeter-002.scd (live playback) and render.scd (offline render).
 //
 // 12/8 glitch groove at quarter = 170: the polymeter-1 drum rack re-grooved
 // into a syncopated 12/8, a blip melody on a 10-sixteenth (5/8) cycle that

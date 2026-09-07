@@ -1,5 +1,5 @@
-// polymeter-3-graph.scd — the single source of truth for the synth graph.
-// Loaded by polymeter-3.scd (live playback) and render.scd (offline render).
+// polymeter-003-graph.scd — the single source of truth for the synth graph.
+// Loaded by polymeter-003.scd (live playback) and render.scd (offline render).
 //
 // A rhythmicon at quarter = 170, in two sections.
 // Section 1: voice n plays n evenly spaced hits per 4/4 bar, cycling the

@@ -1,5 +1,5 @@
-// polymeter-graph.scd — the single source of truth for the synth graph.
-// Loaded by polymeter.scd (live playback) and render.scd (offline render):
+// polymeter-001-graph.scd — the single source of truth for the synth graph.
+// Loaded by polymeter-001.scd (live playback) and render.scd (offline render):
 // this file's last expression is the graph function, so `.load` returns it.
 // Edit sounds/patterns here; both players pick the change up automatically.
 

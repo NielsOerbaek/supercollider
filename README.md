@@ -27,7 +27,7 @@ was.
 
 Renders offline (no audio hardware needed), normalizes to −16 LUFS with a
 flat gain, tags it from `track.conf`, and drops a timestamped mp3 in
-`tracks/<name>/renders/`. With no argument it renders `tracks/polymeter`.
+`tracks/<name>/renders/`. With no argument it renders `tracks/polymeter-001`.
 
 ## Toolchain & requirements
 
@@ -63,13 +63,13 @@ LFO paths differ between code versions even with the same seed.
 
 ## Tracks
 
-- **polymeter** — drums in 5/4, bass in 7/4, arpeggio in 9/8, clap in 4/4,
+- **polymeter-001** — drums in 5/4, bass in 7/4, arpeggio in 9/8, clap in 4/4,
   all in just intonation on E; after Thor Magnusson's *Drummer* (2006).
-- **polymeter-2** — 12/8 glitch groove at 170: syncopated kit into a
+- **polymeter-002** — 12/8 glitch groove at 170: syncopated kit into a
   half-time jungle drop, fat slide bass, FM-pluck motif, blips in 5/8,
   a distorted strummed-guitar wall, and a bitcrush disintegration arc;
   just intonation on E.
-- **polymeter-3** — a rhythmicon at 170: nine plucky voices, voice n
+- **polymeter-003** — a rhythmicon at 170: nine plucky voices, voice n
   playing n hits per bar on the first n harmonics of E, entering one by
   one and leaving FIFO; stated twice — first locked to the downbeat,
   then with rates floored to powers of two so the patterns phase.

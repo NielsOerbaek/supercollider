@@ -1,5 +1,5 @@
-// render.scd — offline (non-realtime) render of polymeter-3 to render.wav.
-// Loads the shared synth graph. Run via:  ./make_mp3.sh tracks/polymeter-3
+// render.scd — offline (non-realtime) render of polymeter-003 to render.wav.
+// Loads the shared synth graph. Run via:  ./make_mp3.sh tracks/polymeter-003
 //
 // KEEP IN SYNC with the graph: `bpm` and `bars` must match its tempo and
 // total length — they determine the render duration.
@@ -10,8 +10,8 @@ var duration = ((bars * 4 * (60 / bpm)) + 3).roundUp;
 
 var dir = thisProcess.nowExecutingPath.notNil.if(
 	{ thisProcess.nowExecutingPath.dirname },
-	{ "~/Documents/repos/supercollider/tracks/polymeter-3".standardizePath });
-var func = (dir +/+ "polymeter-3-graph.scd").load;
+	{ "~/Documents/repos/supercollider/tracks/polymeter-003".standardizePath });
+var func = (dir +/+ "polymeter-003-graph.scd").load;
 var def = func.asSynthDef(name: \poly3render);
 var score = Score([
 	[0.0, [\d_recv, def.asBytes]],

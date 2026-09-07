@@ -1,5 +1,5 @@
 // render.scd — offline (non-realtime) render of the piece to a WAV.
-// Loads the shared synth graph from polymeter-graph.scd, so edits there
+// Loads the shared synth graph from polymeter-001-graph.scd, so edits there
 // are picked up automatically. Run with:  sclang render.scd
 // (make_mp3.sh wraps this and transcodes to a timestamped mp3.)
 //
@@ -14,8 +14,8 @@ var duration = trackEnd.roundUp + 3;            // small guard for the reverb ta
 
 var dir = thisProcess.nowExecutingPath.notNil.if(
 	{ thisProcess.nowExecutingPath.dirname },
-	{ "~/Documents/repos/supercollider/tracks/polymeter".standardizePath });
-var func = (dir +/+ "polymeter-graph.scd").load;
+	{ "~/Documents/repos/supercollider/tracks/polymeter-001".standardizePath });
+var func = (dir +/+ "polymeter-001-graph.scd").load;
 var def = func.asSynthDef(name: \polyrender);
 var score = Score([
 	[0.0, [\d_recv, def.asBytes]],

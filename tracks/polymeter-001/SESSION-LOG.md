@@ -1,4 +1,4 @@
-# Session log — polymeter (Study No. 1)
+# Session log — polymeter-001 (Study No. 1)
 
 A transparency record of how this track was made: a human giving musical
 direction, Claude (Anthropic's Claude Fable 5, via Claude Code) writing the
@@ -163,4 +163,4 @@ replaced with measured flat-gain normalization; arc shortened to ~3:30.*
 > Yes, git init and use gh to make a personal public repo for it.
 
 *Repo restructured to tracks/<name>/ with per-track metadata; published to
-GitHub. Development continued in tracks/polymeter-2/SESSION-LOG.md.*
+GitHub. Development continued in tracks/polymeter-002/SESSION-LOG.md.*

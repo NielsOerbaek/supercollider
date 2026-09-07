@@ -1,6 +1,6 @@
-# Session log — polymeter-3 (Study No. 3)
+# Session log — polymeter-003 (Study No. 3)
 
-Continuation of the session in tracks/polymeter-2/SESSION-LOG.md, from the
+Continuation of the session in tracks/polymeter-002/SESSION-LOG.md, from the
 moment this track began (2026-09-04). Same format: **user messages
 verbatim** (typos included), assistant work summarized in italics. Full
 conversation: <https://claude.ai/code/session_01RCsG5EUV8jKv62xX2m1Wkz>.

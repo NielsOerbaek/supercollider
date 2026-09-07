@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render a track to a loudness-normalized, tagged, timestamped mp3.
 #
-# Usage: ./make_mp3.sh [tracks/<name>]     (default: tracks/polymeter)
+# Usage: ./make_mp3.sh [tracks/<name>]     (default: tracks/polymeter-001)
 #
 # A track directory needs:
 #   render.scd   — offline renderer; must write render.wav next to itself
@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-track="${1:-tracks/polymeter}"
+track="${1:-tracks/polymeter-001}"
 track="${track%/}"
 name=$(basename "$track")
 [ -f "$track/render.scd" ] || { echo "error: no render.scd in $track" >&2; exit 1; }

@@ -1,6 +1,6 @@
-# Session log — polymeter-2 (Study No. 2)
+# Session log — polymeter-002 (Study No. 2)
 
-Continuation of the session in tracks/polymeter/SESSION-LOG.md, from the
+Continuation of the session in tracks/polymeter-001/SESSION-LOG.md, from the
 moment this track began (2026-09-04). Same format: **user messages
 verbatim** (typos included), assistant work summarized in italics. Full
 conversation: <https://claude.ai/code/session_01RCsG5EUV8jKv62xX2m1Wkz>.
@@ -11,7 +11,7 @@ conversation: <https://claude.ai/code/session_01RCsG5EUV8jKv62xX2m1Wkz>.
 > more blips and glitches and do a syncopated rythm in 12/8th. Tempo 170
 > and delays moving around.
 
-*Assistant scaffolded tracks/polymeter-2/ on the repo pattern: track-1
+*Assistant scaffolded tracks/polymeter-002/ on the repo pattern: track-1
 drum voices re-grooved in 12/8 (3+3+2+2+2), blips on a 5/8 sixteenth
 cycle, zap/stutter/click glitches, comb delays wandering in time and pan.*
 
