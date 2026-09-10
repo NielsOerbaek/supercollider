@@ -186,3 +186,10 @@ five hits a bar would pile into mud).*
 *`make_mp3.sh` now stamps the short commit hash into the filename, with a
 `-dirty` suffix when the working tree has uncommitted changes so a render can
 never be silently mistaken for one matching that commit.*
+
+> The delay on the bass should not start there, but fade in from bar 2 until
+> bar 6 and stay one.
+
+*The delay send is silent through bar 1, blooms in across bars 2-6 and stays on
+for the rest of the track, still growing with the bass ramp after that — so the
+riff is stated clean once before the repeats start filling in around it.*

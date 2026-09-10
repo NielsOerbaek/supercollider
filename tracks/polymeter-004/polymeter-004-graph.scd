@@ -189,7 +189,7 @@
 	var arp8Pitch = [4, 64/9, 16/3, 8, 24/5, 4, 6, 64/9];  // E4 D5 A4 E5 G4 E4 B4 D5
 
 	var clk, bassTrig, bassVel, bassF, bass;
-	var bassRamp, bassDecay, bassDry, bassDel, bassRev;
+	var bassRamp, bassDecay, bassDry, bassDel, bassRev, delayFade;
 	var deepTrig, deepF, deep;
 	var drumGate, snareGate, kitGate, twoStepSw, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
@@ -241,7 +241,13 @@
 	// with a shelf lift on top. The x3 makes up what the high-pass removes.
 	bassDel = HPF.ar(CombC.ar(HPF.ar(bass, 900) * 3, 0.6, 3 * s8,
 		4 + (7 * bassRamp)), 500);
-	bassDel = BHiShelf.ar(bassDel, 2500, 1, 5) * (0.15 + (0.11 * bassRamp));
+	// the delay is silent for the first bar, blooms in across bars 2-6, and is
+	// then on for the rest of the track — so the bass states the riff clean
+	// once before the repeats start filling in around it. It keeps growing
+	// with bassRamp after that, along with everything else.
+	delayFade = ((elapsed - barDur) / (4 * barDur)).clip(0, 1);
+	bassDel = BHiShelf.ar(bassDel, 2500, 1, 5)
+	* delayFade * (0.15 + (0.11 * bassRamp));
 	// the wet sends rise, but by less than the dry falls — otherwise the bass
 	// changes character without ever actually receding, which is what a first
 	// pass at this did (net level moved 0.5 dB across the whole track).
