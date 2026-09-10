@@ -63,8 +63,8 @@
 //   bar 20  ...the arps switch to a second, more active form and lift while
 //           they carry the section alone; the kit returns at bar 28, still
 //           two-step, now interlocking with the clap
-//   bar 11  the 6-step bell arp
-//   bar 15  the 8-step glass arp
+//   bar 11  both arps at once — the 6-step bell hard left, the 8-step glass
+//           hard right, arriving together so the split opens in one move
 //   bar 20  halfway: the whole kit cuts out and polymeter-001's clap takes
 //           over alone, on 1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15
 //           — and this is the peak of the crush arc, where the crusher stops
@@ -76,8 +76,7 @@
 	var barDur = 30 * s8;        // one 15/4 bar (~5.29 s)
 	var drumBar = 2;             // kick + hat enter (downbeat of bar 3)
 	var snareBar = 6;            // snares + the 16th drive, 4 bars later
-	var arp6Bar = 10;            // the 6-step bell arp
-	var arp8Bar = 14;            // the 8-step glass arp
+	var arpBar = 10;             // both arps, together — one entry, not two
 	var clapBar = 20;            // halfway: the kit drops out, the clap takes over
 	var kitReturnBar = 28;       // the kit comes back, now alongside the clap
 	var bars = 40;               // ~3:32
@@ -385,11 +384,11 @@
 	// each arp runs both its streams on the same clock and switches at bar 20,
 	// so neither loses its place in its own cycle
 	arpAlt  = elapsed >= ((clapBar * barDur) - 0.01);
-	arpEvo  = ((elapsed - (arp6Bar * barDur)) / (total - (arp6Bar * barDur))).clip(0, 1);
+	arpEvo  = ((elapsed - (arpBar * barDur)) / (total - (arpBar * barDur))).clip(0, 1);
 	arpLift = 1 + (0.55 * Lag.kr((elapsed >= (clapBar * barDur))
 		* (elapsed < (kitReturnBar * barDur)), 0.4));
 
-	arp6Trig = clk * (elapsed >= ((arp6Bar * barDur) - 0.01))
+	arp6Trig = clk * (elapsed >= ((arpBar * barDur) - 0.01))
 	* ((Demand.ar(clk, 0, Dseq(arp6Mask, inf))    * (1 - arpAlt))
 		+ (Demand.ar(clk, 0, Dseq(arp6MaskAlt, inf)) * arpAlt));
 	arp6F = Latch.ar(fund
@@ -406,7 +405,7 @@
 	+ (Latch.ar(arp6, Impulse.ar(LFNoise2.kr(0.35).exprange(1400, 7000)))
 		.round(2 ** LFNoise2.kr(0.3).range(3.0, 5.0).neg * 2) * (0.5 * crushArc));
 
-	arp8Trig = clk * (elapsed >= ((arp8Bar * barDur) - 0.01))
+	arp8Trig = clk * (elapsed >= ((arpBar * barDur) - 0.01))
 	* ((Demand.ar(clk, 0, Dseq(arp8Mask, inf))    * (1 - arpAlt))
 		+ (Demand.ar(clk, 0, Dseq(arp8MaskAlt, inf)) * arpAlt));
 	arp8F = Latch.ar(fund

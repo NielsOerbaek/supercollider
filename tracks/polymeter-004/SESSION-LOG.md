@@ -207,3 +207,33 @@ differs from the dry bus by 122% of its RMS and pulls the crest factor from
 11.0 to 4.3. That flattening is inherent to this much crushing, so the snare
 and burst trims were lifted to keep the bar-7 entry reading through it — it
 still lands at +2.4 dB in the high band.*
+
+> Crusher should now start at max. Is should move thoughout the track, start
+> small and have a clear peak where the rest of the track also gets the
+> treatment.
+
+*Read as: the current heavy setting becomes the peak of an arc rather than a
+constant. crushArc is a half-sine over the full length, so its peak lands
+exactly at the midpoint — bar 20, the bar the kit cuts out. The drums start
+nearly clean and are progressively destroyed right up to the moment they
+disappear. Near the peak the crusher takes the whole mix, so bass, arps and
+clap get it too. Measured crest factor 6.44 at the start, 3.38 at the peak,
+10.77 at the end.*
+
+> And the two 6 and 8 patterns should be panned pretty hard into each ear and
+> also have some evolving distortion/crushing/saturation.
+
+> And the kit should return after 8 bars on with the clap. And in those 8 bars
+> we need real work on the arps.
+
+*Bell hard left, glass hard right (measured 8.3 dB and 5.0 dB of separation).
+Each gained saturation growing from its entry plus a share of the crush arc.
+At bar 20 both switch to a second, more active form — no rests, wider leaps —
+with a lift while they carry the section alone, and they keep the new material
+afterwards. The kit returns at bar 28 alongside the clap, still two-step so it
+interlocks rather than stacks.*
+
+> Both arps should arrive at the same time.
+
+*One `arpBar` for both instead of two separate entries, so the stereo split
+opens in a single move at bar 11 rather than one ear at a time.*
