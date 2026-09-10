@@ -60,10 +60,15 @@
 //   bar 3   kick and hat only
 //   bar 7   snare — the backbeat, plus polymeter-002's scattered 32nd-note
 //           jungle bursts, and the hat doubling to a 16th line
+//   bar 20  ...the arps switch to a second, more active form and lift while
+//           they carry the section alone; the kit returns at bar 28, still
+//           two-step, now interlocking with the clap
 //   bar 11  the 6-step bell arp
 //   bar 15  the 8-step glass arp
 //   bar 20  halfway: the whole kit cuts out and polymeter-001's clap takes
-//           over alone, on 1 2-and 3-and 5 7-and 8-and 10 12-and 13-and
+//           over alone, on 1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15
+//           — and this is the peak of the crush arc, where the crusher stops
+//           being a drum effect and takes the entire mix with it
 
 {
 	var q = 170/60;              // tempo: quarter = 170
@@ -74,6 +79,7 @@
 	var arp6Bar = 10;            // the 6-step bell arp
 	var arp8Bar = 14;            // the 8-step glass arp
 	var clapBar = 20;            // halfway: the kit drops out, the clap takes over
+	var kitReturnBar = 28;       // the kit comes back, now alongside the clap
 	var bars = 40;               // ~3:32
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
@@ -95,13 +101,19 @@
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
 	var arp6Amp  = 0.30;
 	var arp8Amp  = 0.26;
-	var drumCrush = 0.88;        // wet share of the bitcrusher on the drums
-	// The crusher is now the point rather than a colour: past polymeter-002's
-	// own *5 drive, nearly all wet, latched slower and quantized coarser. It
-	// does flatten dynamics — that is what this kind of crushing does — so
-	// the snare and burst trims below are lifted to keep the bar-7 entry
-	// reading through it.
-	var crushDrive = 6.0;
+	var drumCrushMax = 0.9;      // wet share of the drum crusher AT THE PEAK
+	// Crushing is an arc across the whole piece, not a setting. crushArc is a
+	// half-sine over the full length, so it starts near zero, swells, and
+	// peaks exactly at the midpoint — which is bar 20, the bar the kit cuts
+	// out and the clap takes over. The drums therefore start nearly clean and
+	// are progressively destroyed right up to the moment they disappear.
+	// These are the values reached AT that peak; everything below scales.
+	var crushDriveMax = 6.2;
+	// past the drum bus: near the peak the crusher takes the whole mix, so
+	// bass, arps and clap get the treatment too. masterCrush is the arc
+	// raised to the 5th power, which keeps it silent for most of the track
+	// and opens a clear window roughly bars 14-26 around the peak.
+	var masterCrushMax = 0.8;
 	var revMix   = 0.2;          // the shared room, same as track 3
 
 	// the bar on a 30-eighth grid. Rows are the three bass cells;
@@ -180,6 +192,16 @@
 		0.95, 0, 0, 0.9, 0, 0.95, 0, 0, 0.88, 0
 	];
 
+	// From bar 20 — the eight bars where the clap plays alone and the arps are
+	// the only melodic movement left — both arps take a second, more active
+	// form: no rests, wider leaps, and a level lift while they are exposed.
+	// They keep the new material after the kit returns; it is a development,
+	// not a detour.
+	var arp6MaskAlt  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
+	var arp6PitchAlt = [4, 2, 32/9, 12/5, 3, 8/3];         // E4 E3 D4 G3 B3 A3
+	var arp8MaskAlt  = [1, 0.6, 0.85, 0.6, 0.9, 0.55, 0.8, 0.6];
+	var arp8PitchAlt = [8, 24/5, 64/9, 6, 16/3, 8, 4, 6];  // E5 G4 D5 B4 A4 E5 E4 B4
+
 	// the two arps, on the same eighth grid but in their own cycle lengths.
 	// Pitches are the same E minor pentatonic pool as the bass (E G A B D),
 	// moved up two and three octaves, so the arps spell the same harmony the
@@ -197,12 +219,19 @@
 	var drumGate, snareGate, kitGate, twoStepSw, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
-	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8;
+	var crushArc, drumCrush, crushDrive, masterCrush, mixCrushed;
+	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift;
 	var mix, master;
 
 	RandSeed.ir(1, 20260910); // reproducible renders
 
 	clk = Impulse.ar(q * 2);     // the eighth-note clock: 30 steps to the bar
+
+	// the crush arc: 0 -> 1 -> 0 across the piece, peaking at the midpoint
+	crushArc    = ((elapsed / total).clip(0, 1) * pi).sin;
+	drumCrush   = 0.12 + ((drumCrushMax - 0.12) * crushArc);
+	crushDrive  = 1.2 + ((crushDriveMax - 1.2) * crushArc);
+	masterCrush = (crushArc ** 5) * masterCrushMax;
 
 	// ---- bass: polymeter-003's voice 2, an octave down ----
 	// The trigger carries its own velocity, so Latch holds it for the whole
@@ -272,7 +301,10 @@
 	// kitGate closes at the halfway point, where the whole kit hands over to
 	// the clap. twoStepSw is kept separate from the gates so it only ever
 	// selects which kick pattern is playing, never whether one is.
-	kitGate   = elapsed < (clapBar * barDur);
+	// out for the eight clap-only bars, then back — and it stays two-step, so
+	// it returns interlocking with the clap rather than on top of it
+	kitGate   = (elapsed < (clapBar * barDur))
+	+ (elapsed >= ((kitReturnBar * barDur) - 0.01));
 	drumGate  = (elapsed >= ((drumBar * barDur) - 0.01)) * kitGate;
 	snareGate = (elapsed >= ((snareBar * barDur) - 0.01)) * kitGate;
 	twoStepSw = elapsed >= ((snareBar * barDur) - 0.01);
@@ -325,8 +357,12 @@
 	// the track-2 crusher: latch-downsampled at a wandering rate, quantized
 	// to ~4 bits, driven hard. Kept at a fixed mix here rather than ramped —
 	// the dry share is what keeps the kick's punch.
-	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(600, 3200)))
-		.round(2 ** LFNoise2.kr(0.4).range(1.8, 3.2).neg * 2) * crushDrive).tanh * 1.1;
+	// sample rate and bit depth both collapse as the arc rises: the latch
+	// runs 5x faster and 2.6 bits deeper at the extremes than at the peak
+	drumsCrushed = (Latch.ar(drums, Impulse.ar(
+		LFNoise2.kr(0.5).exprange(600, 3200) * (1 + (4 * (1 - crushArc)))))
+		.round(2 ** (LFNoise2.kr(0.4).range(4.4, 6.0) - (2.6 * crushArc)).neg * 2)
+		* crushDrive).tanh * 1.1;
 	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush);
 
 	// ---- the clap: polymeter-001's multi-burst clap, from the halfway point ----
@@ -346,26 +382,56 @@
 	// Pitch is demanded on every step so the mask and the note cycle stay
 	// locked, then latched at the trigger — otherwise a ringing bell would
 	// glide as the stream moved under it.
+	// each arp runs both its streams on the same clock and switches at bar 20,
+	// so neither loses its place in its own cycle
+	arpAlt  = elapsed >= ((clapBar * barDur) - 0.01);
+	arpEvo  = ((elapsed - (arp6Bar * barDur)) / (total - (arp6Bar * barDur))).clip(0, 1);
+	arpLift = 1 + (0.55 * Lag.kr((elapsed >= (clapBar * barDur))
+		* (elapsed < (kitReturnBar * barDur)), 0.4));
+
 	arp6Trig = clk * (elapsed >= ((arp6Bar * barDur) - 0.01))
-	* Demand.ar(clk, 0, Dseq(arp6Mask, inf));
-	arp6F = Latch.ar(fund * Demand.ar(clk, 0, Dseq(arp6Pitch, inf)), arp6Trig).max(20);
+	* ((Demand.ar(clk, 0, Dseq(arp6Mask, inf))    * (1 - arpAlt))
+		+ (Demand.ar(clk, 0, Dseq(arp6MaskAlt, inf)) * arpAlt));
+	arp6F = Latch.ar(fund
+		* ((Demand.ar(clk, 0, Dseq(arp6Pitch, inf))    * (1 - arpAlt))
+			+ (Demand.ar(clk, 0, Dseq(arp6PitchAlt, inf)) * arpAlt)),
+		arp6Trig).max(20);
 	// voice 6 — small bell (pure twelfth partial)
 	arp6 = (SinOsc.ar(arp6F, 0, Decay2.ar(arp6Trig, 0.002, 0.6))
 		+ (SinOsc.ar(arp6F * 3, 0, Decay2.ar(arp6Trig, 0.002, 0.25)) * 0.4)) * 0.8;
+	// saturation that grows from its entry to the last bar, plus a share of
+	// the global crush arc — so the arps dirty up along with everything else
+	arp6 = (arp6 * (1.2 + (4.5 * arpEvo))).tanh * (1 - (0.3 * arpEvo));
+	arp6 = (arp6 * (1 - (0.5 * crushArc)))
+	+ (Latch.ar(arp6, Impulse.ar(LFNoise2.kr(0.35).exprange(1400, 7000)))
+		.round(2 ** LFNoise2.kr(0.3).range(3.0, 5.0).neg * 2) * (0.5 * crushArc));
 
 	arp8Trig = clk * (elapsed >= ((arp8Bar * barDur) - 0.01))
-	* Demand.ar(clk, 0, Dseq(arp8Mask, inf));
-	arp8F = Latch.ar(fund * Demand.ar(clk, 0, Dseq(arp8Pitch, inf)), arp8Trig).max(20);
+	* ((Demand.ar(clk, 0, Dseq(arp8Mask, inf))    * (1 - arpAlt))
+		+ (Demand.ar(clk, 0, Dseq(arp8MaskAlt, inf)) * arpAlt));
+	arp8F = Latch.ar(fund
+		* ((Demand.ar(clk, 0, Dseq(arp8Pitch, inf))    * (1 - arpAlt))
+			+ (Demand.ar(clk, 0, Dseq(arp8PitchAlt, inf)) * arpAlt)),
+		arp8Trig).max(20);
 	// voice 8 — glass (octave-pair sines, very short)
 	arp8 = (SinOsc.ar(arp8F * 2, 0, Decay2.ar(arp8Trig, 0.001, 0.18))
 		+ (SinOsc.ar(arp8F * 4, 0, Decay2.ar(arp8Trig, 0.001, 0.09)) * 0.5)) * 0.7;
+	arp8 = (arp8 * (1.15 + (3.8 * arpEvo))).tanh * (1 - (0.28 * arpEvo));
+	arp8 = (arp8 * (1 - (0.45 * crushArc)))
+	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
+		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.45 * crushArc));
 
 	mix = Pan2.ar(bassDry, -0.08) + Pan2.ar(bassDel, 0.22) + Pan2.ar(bassRev, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
-	+ Pan2.ar(arp6, -0.35, arp6Amp) + Pan2.ar(arp8, 0.4, arp8Amp);
+	+ Pan2.ar(arp6, -0.88, arp6Amp * arpLift) + Pan2.ar(arp8, 0.88, arp8Amp * arpLift);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;
+	// the peak of the arc: the crusher stops being a drum effect and takes
+	// the whole mix with it, then lets go again
+	mixCrushed = (Latch.ar(mix, Impulse.ar(LFNoise2.kr(0.4).exprange(900, 5000)))
+		.round(2 ** LFNoise2.kr(0.3).range(2.4, 4.2).neg * 2) * 2.8).tanh * 0.85;
+	mix = (mix * (1 - masterCrush)) + (mixCrushed * masterCrush);
 	master = EnvGen.kr(Env([1, 1, 0], [total - 4, 4], [0, -3]), doneAction: 2);
 	Limiter.ar(mix * 0.5, 0.9) * master;
 }
