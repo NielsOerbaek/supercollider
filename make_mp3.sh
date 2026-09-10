@@ -6,7 +6,7 @@
 # A track directory needs:
 #   render.scd   — offline renderer; must write render.wav next to itself
 #   track.conf   — optional mp3 metadata (title/artist/album/comment)
-# Output lands in <track>/renders/<name>_<timestamp>.mp3
+# Output lands in <track>/renders/<name>_<timestamp>_<commit>.mp3
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -23,8 +23,13 @@ comment=""
 [ -f "$track/track.conf" ] && source "$track/track.conf"
 
 stamp=$(date +%Y%m%d-%H%M%S)
+# tag every render with the commit it was built from, so an mp3 can always be
+# traced back to exact source. A "-dirty" suffix means the working tree had
+# uncommitted changes and the render does NOT correspond to that commit.
+hash=$(git rev-parse --short HEAD 2>/dev/null || echo nogit)
+git diff --quiet HEAD -- 2>/dev/null || hash="${hash}-dirty"
 mkdir -p "$track/renders"
-out="$track/renders/${name}_${stamp}.mp3"
+out="$track/renders/${name}_${stamp}_${hash}.mp3"
 wav="$track/render.wav"
 
 QT_QPA_PLATFORM=offscreen sclang "$track/render.scd"

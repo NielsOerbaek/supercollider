@@ -27,7 +27,9 @@ was.
 
 Renders offline (no audio hardware needed), normalizes to −16 LUFS with a
 flat gain, tags it from `track.conf`, and drops a timestamped mp3 in
-`tracks/<name>/renders/`. With no argument it renders `tracks/polymeter-001`.
+`tracks/<name>/renders/`. The filename carries the short commit hash the
+render was built from, suffixed `-dirty` if the working tree had uncommitted
+changes — so commit before rendering if you want the mp3 to be traceable. With no argument it renders `tracks/polymeter-001`.
 
 ## Toolchain & requirements
 
@@ -73,3 +75,14 @@ LFO paths differ between code versions even with the same seed.
   playing n hits per bar on the first n harmonics of E, entering one by
   one and leaving FIFO; stated twice — first locked to the downbeat,
   then with rates floored to powers of two so the patterns phase.
+- **polymeter-004** — 15/4 at 170: one 15-quarter bar heard two ways at
+  once. The bass (polymeter-003's Karplus-Strong pluck, dropped to E1)
+  carves it 5+5+5, accenting 1, 2-and and 3-and of each cell with ghost
+  notes in the tail; the bitcrushed polymeter-002 kit puts a kick on every
+  quarter, hat accents every third, and a backbeat every second — beats 2
+  4 6 8 10 12 14, plus 15 to stop an even pattern flipping in an odd bar.
+  Four groupings at once: 1, 2, 3 and 5 against a 15-cycle. polymeter-003's
+  deep pluck pins beat 1 and 7-and, and two of its lighter voices arp on
+  top in 6 and 8 steps — the 6 locking to the drum groups, the 8 rotating
+  against the bar and coming round every fourth. All of it E minor
+  pentatonic in just intonation, resolving nowhere.
