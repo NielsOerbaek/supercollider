@@ -237,3 +237,22 @@ interlocks rather than stacks.*
 
 *One `arpBar` for both instead of two separate entries, so the stereo split
 opens in a single move at bar 11 rather than one ear at a time.*
+
+> bell and class should have equal volume
+
+*They were not: at equal nominal amp the bell voice measures ~5.4 dB hotter
+than the glass, so the two amps are now deliberately different numbers (0.25
+and 0.40) to land equal in the mix. Finding this exposed a real bug — bassAmp
+was applied only to the dry bass, leaving the delay and reverb outside the
+knob, so `bassAmp = 0` did not mute the bass the way the header claims and my
+isolation probes had bass delay bleeding through them. bassAmp now scales the
+whole layer.*
+
+> Also for the outro the arps should run alongside the feedback of the bass
+> delay without drums. After 2 bars it all should fade out over 2 more bars.
+
+*At bar 37 every percussion layer stops and the bass stops being played. The
+comb delay's INPUT is ducked, not just the dry signal — that is what makes
+what follows feedback rather than a tail, since nothing new goes in and the
+comb regenerates from itself. Two bars of arps over a bass that is only echoes,
+then the master fade takes the last two.*

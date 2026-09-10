@@ -63,6 +63,9 @@
 //   bar 20  ...the arps switch to a second, more active form and lift while
 //           they carry the section alone; the kit returns at bar 28, still
 //           two-step, now interlocking with the clap
+//   bar 37  outro: all percussion stops and the bass stops being played —
+//           the arps run on over the comb delay feeding back on itself
+//   bar 39  the whole thing fades over the last two bars
 //   bar 11  both arps at once — the 6-step bell hard left, the 8-step glass
 //           hard right, arriving together so the split opens in one move
 //   bar 20  halfway: the whole kit cuts out and polymeter-001's clap takes
@@ -79,6 +82,8 @@
 	var arpBar = 10;             // both arps, together — one entry, not two
 	var clapBar = 20;            // halfway: the kit drops out, the clap takes over
 	var kitReturnBar = 28;       // the kit comes back, now alongside the clap
+	var outroBar = 36;           // all percussion stops; arps + delay feedback
+	                             // (2 bars), then 2 bars of fade to the end
 	var bars = 40;               // ~3:32
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
@@ -98,8 +103,10 @@
 	var hatLvl   = 0.5;
 	var hat16Lvl = 0.42;         // the offbeat 16th drive
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
-	var arp6Amp  = 0.30;
-	var arp8Amp  = 0.26;
+	// measured equal: the bell voice is inherently ~5.4 dB hotter than the
+	// glass at the same nominal amp, so these are not the same number
+	var arp6Amp  = 0.25;
+	var arp8Amp  = 0.40;
 	var drumCrushMax = 0.9;      // wet share of the drum crusher AT THE PEAK
 	// Crushing is an arc across the whole piece, not a setting. crushArc is a
 	// half-sine over the full length, so it starts near zero, swells, and
@@ -219,6 +226,7 @@
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
 	var crushArc, drumCrush, crushDrive, masterCrush, mixCrushed;
+	var outroGate, outroDuck;
 	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift;
 	var mix, master;
 
@@ -227,6 +235,14 @@
 	clk = Impulse.ar(q * 2);     // the eighth-note clock: 30 steps to the bar
 
 	// the crush arc: 0 -> 1 -> 0 across the piece, peaking at the midpoint
+	// the outro: at bar 37 every percussion layer stops and the bass stops
+	// being played. The comb delay keeps regenerating from its own feedback,
+	// so what is left is the arps over a bass that is only echoes of itself.
+	// Ducking the delay's INPUT (not just the dry) is what makes it feedback
+	// rather than a tail — nothing new goes in.
+	outroGate = elapsed < (outroBar * barDur);
+	outroDuck = Lag.kr(outroGate, 1.2);
+
 	crushArc    = ((elapsed / total).clip(0, 1) * pi).sin;
 	drumCrush   = 0.12 + ((drumCrushMax - 0.12) * crushArc);
 	crushDrive  = 1.2 + ((crushDriveMax - 1.2) * crushArc);
@@ -241,7 +257,7 @@
 	// raised from the 0.03 of track 3 (E1 needs a 24 ms delay line); decay
 	// and coef are voice 2's verbatim. Pluck refills its delay line on every
 	// trigger, so the line is monophonic and each hit cuts the one before.
-	bassTrig = clk * Demand.ar(clk, 0, Dseq(bassMask, inf));
+	bassTrig = clk * outroGate * Demand.ar(clk, 0, Dseq(bassMask, inf));
 	bassVel  = Latch.ar(bassTrig, bassTrig);
 	bassF    = (fund * Demand.ar(bassTrig, 0, Dseq(bassPitch, inf))).max(20);
 	// A longitudinal arc spanning the WHOLE track, bar 3 to the last bar: the
@@ -261,7 +277,7 @@
 	bass = bass + (SinOsc.ar(bassF, 0,
 		Decay2.ar(bassTrig, 0.004, 0.3 + (0.7 * bassRamp))) * bassVel * 0.6);
 	bass = LPF.ar(bass, 5000 - (3400 * bassRamp));
-	bassDry = bass * bassAmp * (1 - (0.62 * bassRamp));
+	bassDry = bass * (1 - (0.62 * bassRamp));
 	// a 3-step delay — 3 eighths, exactly one drum group — with fairly high
 	// feedback: decaytime 8 s against a 0.53 s delay is ~4 dB per repeat, so
 	// about 0.63 feedback at its height. The feedback itself grows across the
@@ -270,7 +286,7 @@
 	// bass — the pick attack and string noise, not the body — so the repeats
 	// ring bright and airy above the part rather than clouding the low end,
 	// with a shelf lift on top. The x3 makes up what the high-pass removes.
-	bassDel = HPF.ar(CombC.ar(HPF.ar(bass, 900) * 3, 0.6, 3 * s8,
+	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900) * 3, 0.6, 3 * s8,
 		4 + (7 * bassRamp)), 500);
 	// the delay is silent for the first bar, blooms in across bars 2-6, and is
 	// then on for the rest of the track — so the bass states the riff clean
@@ -288,7 +304,7 @@
 	// sub + fundamental + a short second partial, under a 1.8 s bloom. The
 	// gaps (2.3 s and 3.0 s) are long enough that each note is nearly gone
 	// before the next, so it reads as a pin, not a drone.
-	deepTrig = clk * Demand.ar(clk, 0, Dseq(deepMask, inf));
+	deepTrig = clk * outroGate * Demand.ar(clk, 0, Dseq(deepMask, inf));
 	deepF = (fund * Demand.ar(deepTrig, 0, Dseq(deepPitch, inf))).max(20);
 	deep = (SinOsc.ar(deepF * 0.5) + (SinOsc.ar(deepF) * 0.5)
 		+ (SinOsc.ar(deepF * 2, 0, Decay2.ar(deepTrig, 0.002, 0.15)) * 0.3))
@@ -302,8 +318,8 @@
 	// selects which kick pattern is playing, never whether one is.
 	// out for the eight clap-only bars, then back — and it stays two-step, so
 	// it returns interlocking with the clap rather than on top of it
-	kitGate   = (elapsed < (clapBar * barDur))
-	+ (elapsed >= ((kitReturnBar * barDur) - 0.01));
+	kitGate   = ((elapsed < (clapBar * barDur))
+		+ (elapsed >= ((kitReturnBar * barDur) - 0.01))) * outroGate;
 	drumGate  = (elapsed >= ((drumBar * barDur) - 0.01)) * kitGate;
 	snareGate = (elapsed >= ((snareBar * barDur) - 0.01)) * kitGate;
 	twoStepSw = elapsed >= ((snareBar * barDur) - 0.01);
@@ -369,7 +385,7 @@
 	// classic clap stack. Deliberately outside the drum bus and its crusher:
 	// the crusher rounds transients off, and this needs to hit bare and hard,
 	// since from here to the end it is the only percussion in the track.
-	clapTrig = clk * (elapsed >= ((clapBar * barDur) - 0.01))
+	clapTrig = clk * (elapsed >= ((clapBar * barDur) - 0.01)) * outroGate
 	* Demand.ar(clk, 0, Dseq(clapMask, inf));
 	clapEnv  = Decay2.ar(clapTrig, 0.001, 0.2)
 	+ Decay2.ar(DelayN.ar(clapTrig, 0.03, 0.011), 0.001, 0.1)
@@ -420,7 +436,11 @@
 	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
 		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.45 * crushArc));
 
-	mix = Pan2.ar(bassDry, -0.08) + Pan2.ar(bassDel, 0.22) + Pan2.ar(bassRev, -0.15)
+	// bassAmp scales the WHOLE bass layer, wet paths included — applying it
+	// only to the dry path left the delay and reverb outside the knob, so
+	// bassAmp = 0 did not actually mute the bass the way the header claims
+	mix = Pan2.ar(bassDry * bassAmp, -0.08) + Pan2.ar(bassDel * bassAmp, 0.22)
+	+ Pan2.ar(bassRev * bassAmp, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
 	+ Pan2.ar(arp6, -0.88, arp6Amp * arpLift) + Pan2.ar(arp8, 0.88, arp8Amp * arpLift);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
@@ -431,6 +451,8 @@
 	mixCrushed = (Latch.ar(mix, Impulse.ar(LFNoise2.kr(0.4).exprange(900, 5000)))
 		.round(2 ** LFNoise2.kr(0.3).range(2.4, 4.2).neg * 2) * 2.8).tanh * 0.85;
 	mix = (mix * (1 - masterCrush)) + (mixCrushed * masterCrush);
-	master = EnvGen.kr(Env([1, 1, 0], [total - 4, 4], [0, -3]), doneAction: 2);
+	// two bars of outro, then two bars of fade
+	master = EnvGen.kr(Env([1, 1, 0], [total - (2 * barDur), 2 * barDur], [0, -3]),
+		doneAction: 2);
 	Limiter.ar(mix * 0.5, 0.9) * master;
 }
