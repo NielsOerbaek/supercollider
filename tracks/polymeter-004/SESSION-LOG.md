@@ -193,3 +193,17 @@ never be silently mistaken for one matching that commit.*
 *The delay send is silent through bar 1, blooms in across bars 2-6 and stays on
 for the rest of the track, still growing with the bass ramp after that — so the
 riff is stated clean once before the repeats start filling in around it.*
+
+> the clap hits should be 1 2a 3a 5 6 7a 8a 10 11 12a 13a 15. And way more
+> distortion/crushing on the drums.
+
+*The new clap pattern is a perfect 3-2 alternation — steps 0 3 5 8 10 13 15 18
+20 23 25 28, six five-step cycles across the bar. That is the bass's grouping,
+not the kit's: the drums that just left were counting in threes, and the clap
+replacing them counts in fives, locking to the bass cells instead. The crusher
+went well past polymeter-002's own setting — drive 1.6 → 6.0, wet 0.5 → 0.88,
+latched slower (600-3200 Hz) and quantized coarser (1.8-3.2 bits). It now
+differs from the dry bus by 122% of its RMS and pulls the crest factor from
+11.0 to 4.3. That flattening is inherent to this much crushing, so the snare
+and burst trims were lifted to keep the bar-7 entry reading through it — it
+still lands at +2.4 dB in the high band.*

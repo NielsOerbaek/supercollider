@@ -88,20 +88,20 @@
 	// at its polymeter-002 weight — the snares then cannot be heard entering
 	// at all. The kick is trimmed back so the rest of the kit has room.
 	var kickLvl  = 0.5;
-	var snareLvl = 1.2;
-	var burstLvl = 1.35;
+	var snareLvl = 1.5;
+	var burstLvl = 1.7;
 	var hatLvl   = 0.5;
 	var hat16Lvl = 0.42;         // the offbeat 16th drive
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
 	var arp6Amp  = 0.30;
 	var arp8Amp  = 0.26;
-	var drumCrush = 0.5;         // wet share of the bitcrusher on the drums
-	// polymeter-002 drives its crusher at *5 before the tanh, but that track
-	// uses it as a drop effect where the crushed drums ARE the sound. Here it
-	// has to sit under an arrangement that still needs to breathe: at *5 the
-	// saturation level-locks the bus so hard that the snares entering at bar
-	// 9 register as +0.2 dB. Backed off to colour rather than flatten.
-	var crushDrive = 1.6;
+	var drumCrush = 0.88;        // wet share of the bitcrusher on the drums
+	// The crusher is now the point rather than a colour: past polymeter-002's
+	// own *5 drive, nearly all wet, latched slower and quantized coarser. It
+	// does flatten dynamics — that is what this kind of crushing does — so
+	// the snare and burst trims below are lifted to keep the bar-7 entry
+	// reading through it.
+	var crushDrive = 6.0;
 	var revMix   = 0.2;          // the shared room, same as track 3
 
 	// the bar on a 30-eighth grid. Rows are the three bass cells;
@@ -168,13 +168,16 @@
 		0.3,  0.5, 0.3, 0.5, 0.75, 0.5, 0.3, 0.5, 0.3, 0.5
 	];
 
-	// the clap, from the halfway point: 1, 2-and, 3-and, 5, 7-and, 8-and, 10,
-	// 12-and, 13-and — steps 0 3 5 8 13 15 18 23 25. Gaps of 3 2 3 5 2 3 5 2 5,
-	// so it leans forward and never repeats its own shape within the bar.
+	// the clap, from the halfway point: 1, 2-and, 3-and, 5, 6, 7-and, 8-and,
+	// 10, 11, 12-and, 13-and, 15 — steps 0 3 5 8 10 13 15 18 20 23 25 28.
+	// That is a perfect 3-2 alternation: six five-step cycles across the bar,
+	// which is the BASS's grouping, not the kit's. The drums that just left
+	// were counting in threes; the clap that replaces them counts in fives,
+	// locking to the bass cells instead.
 	var clapMask = [
-		1.0, 0, 0, 0.95, 0, 0.9,  0, 0, 0.95, 0,
-		0,   0, 0, 1.0,  0, 0.9,  0, 0, 0.95, 0,
-		0,   0, 0, 0.9,  0, 0.95, 0, 0, 0,    0
+		1.0,  0, 0, 0.9, 0, 0.95, 0, 0, 0.88, 0,
+		0.95, 0, 0, 0.9, 0, 0.95, 0, 0, 0.88, 0,
+		0.95, 0, 0, 0.9, 0, 0.95, 0, 0, 0.88, 0
 	];
 
 	// the two arps, on the same eighth grid but in their own cycle lengths.
@@ -322,8 +325,8 @@
 	// the track-2 crusher: latch-downsampled at a wandering rate, quantized
 	// to ~4 bits, driven hard. Kept at a fixed mix here rather than ramped —
 	// the dry share is what keeps the kick's punch.
-	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(1500, 8000)))
-		.round(2 ** LFNoise2.kr(0.4).range(3.5, 5.5).neg * 2) * crushDrive).tanh * 1.1;
+	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(600, 3200)))
+		.round(2 ** LFNoise2.kr(0.4).range(1.8, 3.2).neg * 2) * crushDrive).tanh * 1.1;
 	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush);
 
 	// ---- the clap: polymeter-001's multi-burst clap, from the halfway point ----
