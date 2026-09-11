@@ -256,3 +256,43 @@ comb delay's INPUT is ducked, not just the dry signal — that is what makes
 what follows feedback rather than a tail, since nothing new goes in and the
 comb regenerates from itself. Two bars of arps over a bass that is only echoes,
 then the master fade takes the last two.*
+
+> push
+
+*Pushed cad7131..024f5e6 to origin/main.*
+
+> Notes: When the drums first appear i dont want a a kick at all. I just want
+> the hi-hat and claps on 1 5 6 10 11 15. And the bitcrushing gets too
+> extreme. I like the level of crushing on the two-step drums when they
+> appear, but is should not go above 80% when evolving. And it should run on
+> main the whole time, not just when the drums drop out. And when the two-step
+> drumps appear, they should should have more of a 5/4 feel, with snare hits on
+> 2a and 5. They should still follow the two-step pattern when they reenter
+> after the drop out. And the plucky bass almost dissappears now, but should
+> reemerge in clear view (still with the inital delay) gradually in the sektion
+> where the drums have dropped out and stay there in the two-step section.
+
+*Bars 3-6 lose the kick: hat, plus the clap on beats 1 5 6 10 11 15 — which
+turn out to be the first and last beat of each five-beat bass cell, so the
+claps frame the bass's grouping before the kit exists. The four-on-the-floor
+pattern is gone entirely.*
+
+*The crush arc is soft-capped rather than scaled: below 0.45 — the level the
+two-step drums arrive at in bar 7 — it is untouched, and above it the curve is
+compressed so the peak lands at 0.8. It keeps a clear peak at bar 20 rather
+than flattening into a plateau. The main-bus crusher now follows the same arc
+for the whole track instead of a window around the drop, with its severity
+(latch rate, bit depth, drive) scaling alongside its wet share so it is grain
+early and damage only near the peak; its peak wet share is half the old one.*
+
+*Bars 7-19 become a 5/4 two-step: each ten-step cell is a 5/4 bar, snare on
+2-and and 5, kick on 1 and 3-and with cell B's 3-and dropped for space. Kick
+and snare alternate 3-2-3-2 and together spell out almost exactly the clap
+pattern that takes over at bar 20. From bar 28 the original two-step returns
+unchanged.*
+
+*The bass keeps its recession up to the drop, then walks back out across the
+eight clap-only bars to its opening state — plucky, front, delay back at its
+initial send and feedback — lifted to be heard over the denser kit, and stays
+there. With the delay back at its opening 4 s decay the outro feedback would
+have died in a bar, so the comb's decay is pushed 8 s longer for the outro.*
