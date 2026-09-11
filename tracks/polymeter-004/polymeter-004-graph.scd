@@ -369,25 +369,29 @@
 	// in the outro the feedback is pushed long (+8 s of decay) — with the
 	// bass back at its opening settings the comb would otherwise ring out in
 	// about four seconds, and the outro is meant to be that feedback
-	// over the mass ramp the decay climbs another 40 s — per repeat that is
-	// ~0.4 feedback rising to ~0.92, so each bar of the ramp the repeats pile
-	// up faster than they die and the delay swells into a wall. It carries
-	// straight on into the outro, where the input stops and that wall is
-	// what is left ringing under the arps.
-	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900) * 3, 0.6, 3 * s8,
-		4 + (7 * bassRamp) + (40 * massRamp) + (8 * (1 - outroDuck))), 500);
+	// over the mass ramp the decay climbs another 70 s — per repeat that is
+	// ~0.4 feedback rising to ~0.95, so each bar of the ramp the repeats pile
+	// up faster than they die and the delay swells into a wall. Its filters
+	// also open downward (input high-pass 900 -> 350 Hz, output 500 -> 180 Hz)
+	// so the wall gains body instead of staying a bright shimmer. A first
+	// pass with 40 s, the bright filters and a small send rose only 0.8 dB
+	// across the eight bars. It carries straight on into the outro, where the
+	// input stops and that wall is what is left ringing under the arps.
+	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900 - (550 * massRamp)) * 3,
+		0.6, 3 * s8, 4 + (7 * bassRamp) + (70 * massRamp) + (8 * (1 - outroDuck))),
+		500 - (320 * massRamp));
 	// the delay is silent for the first bar, blooms in across bars 2-6, and is
 	// then on for the rest of the track — so the bass states the riff clean
 	// once before the repeats start filling in around it. It keeps growing
 	// with bassRamp after that, along with everything else.
 	delayFade = ((elapsed - barDur) / (4 * barDur)).clip(0, 1);
 	bassDel = BHiShelf.ar(bassDel, 2500, 1, 5)
-	* delayFade * (0.15 + (0.11 * bassRamp) + (0.2 * massRamp));
+	* delayFade * (0.15 + (0.11 * bassRamp) + (0.9 * massRamp));
 	// with that much feedback the wall would grow without limit, so it runs
 	// into a soft ceiling: unity for normal levels (the whole track before
 	// bar 36 is well under it), saturating as the build gets there — which
 	// is where "massive" turns into "intense"
-	bassDel = (bassDel / 0.6).tanh * 0.6;
+	bassDel = (bassDel / 1.0).tanh;
 	// the wet sends rise, but by less than the dry falls — otherwise the bass
 	// changes character without ever actually receding, which is what a first
 	// pass at this did (net level moved 0.5 dB across the whole track).

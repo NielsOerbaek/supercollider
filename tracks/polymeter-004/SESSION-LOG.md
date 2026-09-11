@@ -441,3 +441,11 @@ rings down under the arps. Two things were tied to the track length and had to
 be pinned to the drop instead: the dirt arc (whose peak would otherwise have
 slid from bar 20 to 24) and the bass's recession rate. The riser's peak is
 down 15%.*
+
+*Measured: the first half matched in balance (crest within 0.2), sitting ~1 dB
+lower in the file only because the flat loudness normalization answered the
+louder back half. The build rose just 0.8 dB across its eight bars — the delay
+was fed only the bass's top end at a small send, so it grew to the level of
+the hats and arps and no further. Pushed: feedback to ~0.95, the send ramp
+more than four times larger, a higher ceiling, and the delay's filters opening
+downward so the wall gains body.*
