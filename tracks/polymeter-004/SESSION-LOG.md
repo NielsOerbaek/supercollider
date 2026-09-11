@@ -338,3 +338,10 @@ each get up to 2.5x or so their own drive, trimmed for level, with the arps'
 low-pass closing a little so they thicken rather than fizz. The clap's own
 drive goes from 1.8 to 4.5 for the whole track, with more again after the
 drop. The grit riding the drum hits stays — it is not background.*
+
+> The arps should be less panned and move from side to side.
+
+*One pan LFO, mirrored between the two arps, so they swing across each other
+and trade sides — at most ±0.6 instead of a fixed ±0.88, one full
+left-right-left every two bars, locked to the grid. Bar 11 falls on a whole
+number of cycles, so both arrive in the centre and fan out.*

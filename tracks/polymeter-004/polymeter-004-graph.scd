@@ -50,7 +50,7 @@
 // 0 and 13). Thirteen steps apart, then seventeen back round, so the bar is
 // pinned lopsidedly. It takes E under cell A and G under cell B.
 //
-// Two of polymeter-003's lighter voices arp on top, hard left and right: its
+// Two of polymeter-003's lighter voices arp on top, swinging across each other: its
 // small bell (voice 6) on a 6-step cycle, which divides 30 exactly and so
 // locks to the drum groups, and its glass (voice 8) on an 8-step cycle,
 // which does not — it shifts 6 steps every bar and comes back round every 4.
@@ -64,8 +64,8 @@
 //           3-2-3-2 — plus polymeter-002's scattered 32nd-note jungle bursts
 //           and the hat doubling to a 16th line. The claps carry on through
 //           it, doubling the kick on each cell's 1 and the snare on its 5.
-//   bar 11  both arps at once — the 6-step bell hard left, the 8-step glass
-//           hard right, arriving together so the split opens in one move
+//   bar 11  both arps at once, arriving together in the centre and swinging
+//           apart — the 6-step bell and 8-step glass trade sides every bar
 //   bar 20  halfway, and the peak of the dirt arc: the kit cuts out and
 //           polymeter-001's clap takes over alone on the full 3-2 pattern
 //           (1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15). The arps
@@ -110,6 +110,11 @@
 	// glass at the same nominal amp, so these are not the same number
 	var arp6Amp  = 0.25;
 	var arp8Amp  = 0.40;
+	// the arps swing across each other: one pan LFO, mirrored between them,
+	// so they cross through the centre and trade sides. Locked to the grid —
+	// one full left-right-left every arpPanBars bars.
+	var arpPanWidth = 0.6;       // widest point either side (was a fixed 0.88)
+	var arpPanBars  = 2;
 	// The dirt arc: a half-sine over the full length, starting near zero and
 	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It
 	// drives the drum bus's overdrive and hit-noise, and traces of crushing.
@@ -257,7 +262,7 @@
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
 	var dirtArc, drumCrush, drumDrive, drumNoise, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
-	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift;
+	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift, arpPan;
 	var mix, master;
 
 	RandSeed.ir(1, 20260910); // reproducible renders
@@ -507,13 +512,18 @@
 	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
 		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.1 * dirtArc));
 
+	// at their entry (bar 11, a whole number of pan cycles in) the LFO is at
+	// zero, so both arrive in the centre and fan out — bell drifting left,
+	// glass right — before crossing back over
+	arpPan = SinOsc.kr(1 / (arpPanBars * barDur)) * arpPanWidth;
+
 	// bassAmp scales the WHOLE bass layer, wet paths included — applying it
 	// only to the dry path left the delay and reverb outside the knob, so
 	// bassAmp = 0 did not actually mute the bass the way the header claims
 	mix = Pan2.ar(bassDry * bassLvl, -0.08) + Pan2.ar(bassDel * bassLvl, 0.22)
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
-	+ Pan2.ar(arp6, -0.88, arp6Amp * arpLift) + Pan2.ar(arp8, 0.88, arp8Amp * arpLift);
+	+ Pan2.ar(arp6, arpPan.neg, arp6Amp * arpLift) + Pan2.ar(arp8, arpPan, arp8Amp * arpLift);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;
