@@ -1,5 +1,5 @@
 // run-004.scd — the running mix's finale: polymeter-004 with every section
-// lengthened, 95 bars instead of 48. Forked from tracks/polymeter-004, which is
+// lengthened, 112 bars instead of 48. Forked from tracks/polymeter-004, which is
 // untouched. Grid zero is this synth's first sample. The bar numbers in the
 // build list below are the run version's.
 //
@@ -63,15 +63,15 @@
 //   bar 4   hat, and claps on 1 5 6 10 12 15. No kick yet.
 //   bar 12  the kit in a 5/4 two-step, with the claps carrying on
 //   bar 16  both arps at once, swinging across each other
-//   bar 44  the drop, and the peak of the dirt arc: the kit cuts out, the
+//   bar 52  the drop, and the peak of the dirt arc: the kit cuts out, the
 //           clap plays the full 3-2 pattern alone, the arps change form, the
 //           plucky bass walks back into view, the pink-noise riser fades in;
 //           the arps fade over the last two of these bars
-//   bar 56  the kit returns in the original two-step
-//   bar 80  the bass's feedback climbs into a wall; from bar 82 the drums
+//   bar 64  the kit returns in the original two-step
+//   bar 97  the bass's feedback climbs into a wall; from bar 99 the drums
 //           overdrive harder to fight through it
-//   bar 92  outro: the arps over the wall ringing down
-//   bar 94  the fade
+//   bar 109 outro: the arps over the wall ringing down
+//   bar 111 the fade
 
 {
 	var q = 170/60;              // tempo: quarter = 170
@@ -80,13 +80,13 @@
 	var drumBar = 3;             // hat + claps enter (downbeat of bar 4), no kick
 	var snareBar = 11;           // the 5/4 two-step kit, 8 bars later
 	var arpBar = 15;             // both arps, together — one entry, not two
-	var clapBar = 43;            // the drop: the kit drops out, the clap takes over
-	var kitReturnBar = 55;       // the kit comes back, now alongside the clap
-	var massBar  = 79;           // two-thirds through the kit's return: the bass
+	var clapBar = 51;            // the drop: the kit drops out, the clap takes over
+	var kitReturnBar = 63;       // the kit comes back, now alongside the clap
+	var massBar  = 96;           // the last 12 bars of the kit's return: the bass
 	                             // delay's feedback starts climbing
-	var outroBar = 91;           // all percussion stops; arps + delay feedback
+	var outroBar = 108;          // all percussion stops; arps + delay feedback
 	                             // (2 bars), then 2 bars of fade to the end
-	var bars = 95;               // ~8:23
+	var bars = 112;              // ~9:53
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — the JI fundamental, as in tracks 1-3

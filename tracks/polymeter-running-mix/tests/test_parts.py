@@ -52,20 +52,20 @@ def test_stem_beat_lock(part):
 # arriving on top barely move the full-band level (+0.5..1.6 dB measured).
 # The duo comparison stays full-band.
 def test_003a_builds_then_thins_to_the_duo():
-    alone = level("003a", 0, 11 * 8, lo=300)            # voice 1 alone
-    full_hi = level("003a", 100 * 8, 126 * 8, lo=300)   # all nine
-    full = level("003a", 100 * 8, 126 * 8)
-    duo = level("003a", 156 * 8, 168 * 8)               # glass + tick
+    alone = level("003a", 0, 7 * 8, lo=300)             # voice 1 alone
+    full_hi = level("003a", 66 * 8, 82 * 8, lo=300)     # all nine
+    full = level("003a", 66 * 8, 82 * 8)
+    duo = level("003a", 108 * 8 + 4, 112 * 8)           # glass + tick
     assert full_hi - alone >= 10
     assert full - duo >= 6
 
 
 # ---- 003b (4/4) ----
 def test_003b_phasing_hold_then_duo():
-    alone = level("003b", 0, 7 * 8, lo=300)
-    full_hi = level("003b", 70 * 8, 110 * 8, lo=300)
-    full = level("003b", 70 * 8, 110 * 8)
-    duo = level("003b", 140 * 8, 150 * 8)
+    alone = level("003b", 0, 5 * 8, lo=300)
+    full_hi = level("003b", 50 * 8, 62 * 8, lo=300)
+    full = level("003b", 50 * 8, 62 * 8)
+    duo = level("003b", 89 * 8, 100 * 8)
     assert full_hi - alone >= 10
     assert full - duo >= 6
 
@@ -90,14 +90,14 @@ def test_001_ends_on_the_arp_tail():
 def test_002_break_drops_the_kit():
     # glitch clicks and the crushers keep some top end in the break, so the
     # margin is modest; a missing break would show ~0 dB
-    drop = level("002", 112 * 12, 120 * 12, lo=6000)
-    brk = level("002", 121 * 12, 127 * 12, lo=6000)
+    drop = level("002", 128 * 12, 136 * 12, lo=6000)
+    brk = level("002", 137 * 12, 143 * 12, lo=6000)
     assert drop - brk >= 4
 
 
 def test_002_second_drop_returns():
-    brk = level("002", 121 * 12, 127 * 12, lo=6000)
-    b2 = level("002", 140 * 12, 180 * 12, lo=6000)
+    brk = level("002", 137 * 12, 143 * 12, lo=6000)
+    b2 = level("002", 150 * 12, 190 * 12, lo=6000)
     assert b2 - brk >= 4
 
 
@@ -105,14 +105,14 @@ def test_002_second_drop_returns():
 def test_004_drop_removes_the_kit():
     # the driven clap and the dirt arc's crush trace keep some top end in
     # the drop; a kit that failed to cut would show ~0 dB
-    kit = level("004", 31 * 30, 43 * 30, lo=6000)
-    drop = level("004", 44 * 30, 50 * 30, lo=6000)
+    kit = level("004", 39 * 30, 51 * 30, lo=6000)
+    drop = level("004", 52 * 30, 58 * 30, lo=6000)
     assert kit - drop >= 4
 
 
 def test_004_outro_drops_the_low_end():
-    build = level("004", 85 * 30, 91 * 30, hi=120)
-    outro = level("004", 91 * 30 + 15, 93 * 30, hi=120)
+    build = level("004", 102 * 30, 108 * 30, hi=120)
+    outro = level("004", 108 * 30 + 15, 110 * 30, hi=120)
     assert build - outro >= 10
 
 

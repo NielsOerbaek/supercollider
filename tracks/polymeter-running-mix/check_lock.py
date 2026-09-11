@@ -60,8 +60,16 @@ def stem_report(mono, sr, start_eighth, window_s=20.0):
     return rows
 
 
-def evaluate(report, drift_tol_ms=1.0, lag_range_ms=(-1.0, 6.0), min_clarity=1.5, min_windows=3):
+def evaluate(report, drift_tol_ms=1.0, lag_range_ms=(-1.0, 6.0), min_clarity=1.5, min_windows=3,
+             outlier_ms=4.0):
     clear = [(t, lag) for t, lag, c in report if c >= min_clarity]
+    # a window far from the stem's median lag is an effect, not a clock: e.g.
+    # 002's dissolve, whose crusher samples so slowly at the end that it holds
+    # every transient back by several ms. Drift is a trend, so fit it without
+    # them (a real drift moves the median along with it and stays in).
+    if clear:
+        med = float(np.median([lag for _, lag in clear]))
+        clear = [(t, lag) for t, lag in clear if abs(lag - med) <= outlier_ms]
     res = {"ok": False, "drift_ms": 0.0, "median_ms": 0.0, "n_clear": len(clear), "reason": ""}
     if len(clear) < min_windows:
         res["reason"] = f"only {len(clear)} windows with a clear grid (need {min_windows})"

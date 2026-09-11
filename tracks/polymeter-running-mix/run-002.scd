@@ -1,11 +1,11 @@
 // run-002.scd — the running mix's peak: polymeter-002 stretched, with a
 // break and a second drop. Forked from tracks/polymeter-002, which is untouched.
 //
-// 12/8 bars (12 eighths): section A 0-40, drumless build 40-56 (the naked
-// pre-drop bars 54-56), drop B 56-120 with the guitar wall from bar 80, a new
-// drumless break 120-128, a new second drop 128-204 with the guitar at full
-// crush, then the crushed drums dissolving alone 204-236 — the last 16 bars
-// under 004's opening. Grid zero is this synth's first sample.
+// 12/8 bars (12 eighths): section A 0-48, drumless build 48-64 (the naked
+// pre-drop bars 62-64), drop B 64-136 with the guitar wall from bar 88, a new
+// drumless break 136-144, a new second drop 144-252 with the guitar at full
+// crush — split by a second break at 196-204 — then the crushed drums
+// dissolving alone 252-284, the last 16 bars under 004's opening. Grid zero is this synth's first sample.
 //
 // 12/8 glitch groove at quarter = 170: the polymeter-1 drum rack re-grooved
 // into a syncopated 12/8, a blip melody on a 10-sixteenth (5/8) cycle that
@@ -17,7 +17,7 @@
 	var q = 170/60;              // tempo: quarter = 170
 	var e8 = 1 / (q * 2);        // eighth-note duration in seconds
 	var clk = Impulse.ar(q * 2); // the eighth-note clock
-	var total = 2448 * e8;       // 204 bars of 12/8 — the full-mix arc (~7:12)
+	var total = 3024 * e8;       // 252 bars of 12/8 — the full-mix arc (~8:54)
 	var outroLen = 384 * e8;     // 32 more bars: the crushed drums alone, dissolving
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — JI fundamental, same family as track 1
@@ -52,14 +52,17 @@
 	// 3 bars of 4/4, so the classic kick-1 / snare-2-and-4 shape (with
 	// per-bar ghost variations) tiles our meter without truncation.
 	RandSeed.ir(1, 20260904); // seed the random UGens: renders reproduce
-	gateA = elapsed < (480 * e8);
+	gateA = elapsed < (576 * e8);
 	// the break, bars 120-128: the kit stops for 8 bars, then drop B2
-	breakGate = (elapsed >= (1440 * e8)) * (elapsed < (1536 * e8));
-	gateB = (elapsed >= (672 * e8)) * (1 - breakGate);
+	// two of them: bars 136-144 between the drops, and bars 196-204 splitting
+	// the long second drop so it isn't one unbroken four-minute block
+	breakGate = ((elapsed >= (1632 * e8)) * (elapsed < (1728 * e8)))
+	+ ((elapsed >= (2352 * e8)) * (elapsed < (2448 * e8)));
+	gateB = (elapsed >= (768 * e8)) * (1 - breakGate);
 	clk16 = Impulse.ar(q * 4);
 	// the two naked bars before the drop (bars 38-40): blips and glitches
 	// fall away, leaving bass + tone alone under maximum disintegration
-	preDrop = (elapsed >= (648 * e8)) * (elapsed < (672 * e8));
+	preDrop = (elapsed >= (744 * e8)) * (elapsed < (768 * e8));
 	// climbs 0 -> 1 across the first 12 outro bars: drives the drum crush
 	// to total dissolution after the rest of the mix has left
 	// (over 24 of the 32 dissolve bars, so the drums are still a presence
@@ -186,7 +189,7 @@
 		Impulse.ar(LFNoise2.kr(0.27).range(11.5, 15.5))];
 	// the guitar's own evolution (entry at bar 48 -> bar 76): a high B5
 	// string gradually joins, and the layer bitcrushes deeper
-	gtrRamp = ((elapsed - (960 * e8)) / (480 * e8)).clip(0, 1);
+	gtrRamp = ((elapsed - (1056 * e8)) / (576 * e8)).clip(0, 1);
 	strings = [0, 1].collect { |chan|
 		var sum = [4, 6, 8].collect { |ratio, i|
 			var trig = DelayN.ar(strumTrig[chan], 0.04, i * 0.006);
@@ -219,7 +222,7 @@
 	// enters 8 bars after the drop, fading in over a further 8 bars (~17 s).
 	// the +5 curve keeps it near-inaudible for most of the fade and blooms
 	// late — a true slow fade (the default -4 curve rises almost instantly)
-	* EnvGen.kr(Env.asr(96 * e8, 1, 4, 5), elapsed >= (960 * e8)) * screechAmp
+	* EnvGen.kr(Env.asr(96 * e8, 1, 4, 5), elapsed >= (1056 * e8)) * screechAmp
 	* (1 - Lag.kr(breakGate, 0.3));   // the guitar sits the break out too
 
 	// ---- moving delays: comb lines whose delay times AND pan positions ----
@@ -246,7 +249,7 @@
 	// and NEVER releases — they carry the disintegration through the drop,
 	// so the drop stacks clean jungle drums on top of still-ruined bass/tone
 	// instead of resetting the intensity
-	btRamp = ((elapsed - (480 * e8)) / (168 * e8)).clip(0, 1);
+	btRamp = ((elapsed - (576 * e8)) / (168 * e8)).clip(0, 1);
 	btBus = (bass ! 2) + Pan2.ar(tone, -0.2, toneAmp);
 	btCrushed = Latch.ar(btBus, Impulse.ar(8000 * (1 - (0.85 * btRamp))))
 	.round(2 ** (8 - (5 * btRamp)).neg * 2);
@@ -263,7 +266,7 @@
 	// crusher wet, coarseness and bit depth all ramp from bar 32 to bar 46,
 	// hold through the two naked pre-drop bars — then vanish at the exact
 	// instant of the drop, so the drop lands clean
-	gapRamp = ((elapsed - (480 * e8)) / (168 * e8)).clip(0, 1) * (elapsed < (672 * e8));
+	gapRamp = ((elapsed - (576 * e8)) / (168 * e8)).clip(0, 1) * (elapsed < (768 * e8));
 	gapCrushed = Latch.ar(mix, Impulse.ar(9000 * (1 - (0.88 * gapRamp))))
 	.round(2 ** (8 - (5.5 * gapRamp)).neg * 2);
 	mix = (mix * (1 - (0.7 * gapRamp))) + (gapCrushed * (0.7 * gapRamp));
@@ -279,7 +282,7 @@
 	mix  = LPF.ar(mix, LFNoise2.kr(0.03).exprange(4500, 16000));
 	// general saturation on the whole mix — leans harder after the drop
 	mix  = (mix * (1.6 + (0.9 * Lag.kr(gateB, 2)))).tanh * 0.55;
-	revAmt = revMix * (1 + ((elapsed >= (480 * e8)) * (elapsed < (672 * e8))).lag(5));
+	revAmt = revMix * (1 + ((elapsed >= (576 * e8)) * (elapsed < (768 * e8))).lag(5));
 	mix = FreeVerb.ar(mix, revAmt, 0.6, 0.35);
 	// very gentle glue compression; loudness normalization is in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.15;

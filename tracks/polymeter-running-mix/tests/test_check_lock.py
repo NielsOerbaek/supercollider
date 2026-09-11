@@ -55,3 +55,11 @@ def test_drift_fails():
 def test_stem_off_the_grid_fails():
     res = check_lock.evaluate(check_lock.stem_report(burst_stem(0, 60, offset_ms=50.0), SR, 0))
     assert not res["ok"]
+
+
+def test_one_outlier_window_is_not_drift():
+    x = burst_stem(0, 100)
+    rep = check_lock.stem_report(x, SR, 0)
+    rep[-1] = (rep[-1][0], 11.8, rep[-1][2])       # e.g. a slow crusher at the very end
+    res = check_lock.evaluate(rep)
+    assert res["ok"], res

@@ -5,20 +5,19 @@
 // the nearest power of two while its pitch cycle keeps n notes — voice 3
 // plays its 3 notes as half notes (a 1.5-bar pattern), voice 7 its 7 as
 // quarters, voice 9 as eighths — so the odd voices phase against the
-// barline. Voices enter every 8 bars (voice 9 at bar 64); all nine phase
-// together over bars 64-112, a hold the original never had; then they
-// leave first-in-first-out every 4 bars from bar 112. The duo plays on
-// alone from bar 136, carries on under 002's opening from bar 152, and
-// fades with this stem's end at bar 168.
+// barline. Voices enter every 6 bars (voice 9 at bar 48); all nine phase
+// together over bars 48-64, then leave first-in-first-out every 4 bars from
+// bar 64. The duo plays on alone from bar 88, carries on under 002's opening
+// from bar 104, and fades with this stem's end at bar 120.
 //
 // Grid zero is this synth's first sample; every clock and gate counts from it.
 
 {
 	var q = 170/60;              // tempo: quarter = 170
 	var barDur = 4 / q;          // one 4/4 bar (~1.41 s)
-	var entryEvery = 8;          // bars between entries
-	var fifoBar = 112;           // first exit
-	var bars = 168;              // stem length (1344 eighths)
+	var entryEvery = 6;          // bars between entries
+	var fifoBar = 64;            // first exit
+	var bars = 120;              // stem length (960 eighths)
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — harmonic 1

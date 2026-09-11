@@ -4,21 +4,21 @@
 //
 // A rhythmicon at quarter = 170: voice n plays n evenly spaced hits per 4/4
 // bar, cycling the first n harmonics of E2, so every bar is an ascending
-// harmonic fan and everyone meets on the downbeat. Voices enter every 12
-// bars (the original: every 8) — voice 9 at bar 96 — all nine hold together
-// over bars 96-128, then leave first-in-first-out every 4 bars from bar 128.
-// The glass + tick duo plays on alone from bar 152, carries on under 001's
-// drums from bar 170 (the running mix's hand-over), and fades with this
-// stem's end at bar 186.
+// harmonic fan and everyone meets on the downbeat. Voices enter every 8 bars —
+// voice 9 at bar 64 — and all nine hold together over bars 64-84. 001's drums
+// land on the full ensemble at bar 84 (the running mix's hand-over), and the
+// voices leave first-in-first-out over them, every 4 bars, so the warm-up
+// thins out under the kit instead of leaving a gap before it. The glass +
+// tick duo plays on after the last exit (bar 108) and fades with the stem.
 //
 // Grid zero is this synth's first sample; every clock and gate counts from it.
 
 {
 	var q = 170/60;              // tempo: quarter = 170
 	var barDur = 4 / q;          // one 4/4 bar (~1.41 s)
-	var entryEvery = 12;         // bars between entries
-	var fifoBar = 128;           // first exit
-	var bars = 186;              // stem length (1488 eighths)
+	var entryEvery = 8;          // bars between entries
+	var fifoBar = 84;            // first exit — the bar 001's drums land on
+	var bars = 116;              // stem length (928 eighths)
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — harmonic 1

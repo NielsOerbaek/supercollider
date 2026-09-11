@@ -9,7 +9,7 @@ def test_mix_length_and_loudness_targets():
     tl = json.loads((TRACK / "timeline.json").read_text())
     mix = assemble.assemble(tl, TRACK / "stems")
     secs = len(mix) / tl["sampleRate"]
-    assert abs(secs - 1797.53) <= 5.0
+    assert abs(secs - 1800.0) <= 5.0
     import stem_loudness
     for p in tl["parts"]:
         m = stem_loudness.integrated_lufs(TRACK / "stems" / f"{p['name']}.wav")

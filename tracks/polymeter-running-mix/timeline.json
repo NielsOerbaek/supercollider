@@ -7,8 +7,8 @@
     {
       "name": "003a",
       "start": 0,
-      "length": 1488,
-      "gainDb": 5.7,
+      "length": 928,
+      "gainDb": 5.3,
       "fadeIn": 0,
       "fadeOut": 16,
       "targetLufs": -21,
@@ -16,7 +16,7 @@
     },
     {
       "name": "001",
-      "start": 1360,
+      "start": 672,
       "length": 2248,
       "gainDb": 0.6,
       "fadeIn": 0,
@@ -25,9 +25,9 @@
     },
     {
       "name": "003b",
-      "start": 3480,
-      "length": 1344,
-      "gainDb": 7.3,
+      "start": 2792,
+      "length": 960,
+      "gainDb": 8.0,
       "fadeIn": 0,
       "fadeOut": 16,
       "targetLufs": -20,
@@ -35,18 +35,18 @@
     },
     {
       "name": "002",
-      "start": 4696,
-      "length": 2832,
-      "gainDb": 2.0,
+      "start": 3624,
+      "length": 3408,
+      "gainDb": 1.9,
       "fadeIn": 0,
       "fadeOut": 16,
       "targetLufs": -16
     },
     {
       "name": "004",
-      "start": 7336,
-      "length": 2850,
-      "gainDb": -1.2,
+      "start": 6840,
+      "length": 3360,
+      "gainDb": -1.0,
       "fadeIn": 0,
       "fadeOut": 0,
       "targetLufs": -16
