@@ -71,7 +71,9 @@
 //           polymeter-001's clap takes over alone on the full 3-2 pattern
 //           (1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15). The arps
 //           switch to a second, more active form, and the plucky bass walks
-//           back out of the distance into clear view over these eight bars
+//           back out of the distance into clear view over these eight bars.
+//           A single pink noise fades in across them, sweeping side to side
+//           and opening up, and is cut dead by the kit's return
 //   bar 28  the kit returns alongside the clap, in the original two-step:
 //           kick 0 5 12 21 27 against the even-beat backbeat. The bass stays
 //           up front.
@@ -115,6 +117,12 @@
 	// one full left-right-left every arpPanBars bars.
 	var arpPanWidth = 0.6;       // widest point either side (was a fixed 0.88)
 	var arpPanBars  = 2;
+	// the riser: pink noise through the eight drumless bars, fading in and
+	// opening up as it goes, cut dead when the kit comes back. The amp is
+	// calibrated — at full it measured -32.6 dB alone through the bus chain,
+	// so 2.0 peaks it ~7 dB under the drop's mix just before the cut.
+	var riserAmp     = 2.0;
+	var riserPanBars = 1;        // one full left-right-left per bar
 	// The dirt arc: a half-sine over the full length, starting near zero and
 	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It
 	// drives the drum bus's overdrive and hit-noise, and traces of crushing.
@@ -266,6 +274,7 @@
 	var dirtArc, drumDrive, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
 	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpPan;
+	var riserFade, riser;
 	var mix, master;
 
 	RandSeed.ir(1, 20260910); // reproducible renders
@@ -519,13 +528,28 @@
 	// drifting left, the higher one right — before crossing back over
 	arpPan = SinOsc.kr(1 / (arpPanBars * barDur)) * arpPanWidth;
 
+	// ---- the riser: a single pink noise across the drumless bars ----
+	// One source, swept left and right by one LFO, so it moves as a single
+	// thing — two independent noises wander apart and read as oddly panned.
+	// riserFade runs 0 -> 1 over bars 20-28. Level follows its square, so it
+	// creeps in and builds late; the low-pass opens with it, exponentially,
+	// from ~700 Hz to ~10 kHz, wobbling slightly so it doesn't sound like a
+	// straight sweep. The gate cuts it the instant the kit returns.
+	riserFade = ((elapsed - (clapBar * barDur))
+		/ ((kitReturnBar - clapBar) * barDur)).clip(0, 1);
+	riser = LPF.ar(HPF.ar(PinkNoise.ar, 150),
+		700 * (14 ** riserFade) * LFNoise2.kr(0.4).exprange(0.8, 1.25));
+	riser = riser * (riserFade ** 2) * riserAmp
+	* (elapsed < ((kitReturnBar * barDur) - 0.01));
+
 	// bassAmp scales the WHOLE bass layer, wet paths included — applying it
 	// only to the dry path left the delay and reverb outside the knob, so
 	// bassAmp = 0 did not actually mute the bass the way the header claims
 	mix = Pan2.ar(bassDry * bassLvl, -0.08) + Pan2.ar(bassDel * bassLvl, 0.22)
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
-	+ Pan2.ar(arp6, arpPan.neg, arp6Amp) + Pan2.ar(arp8, arpPan, arp8Amp);
+	+ Pan2.ar(arp6, arpPan.neg, arp6Amp) + Pan2.ar(arp8, arpPan, arp8Amp)
+	+ Pan2.ar(riser, SinOsc.kr(1 / (riserPanBars * barDur)) * 0.7);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;

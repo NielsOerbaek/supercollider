@@ -389,3 +389,16 @@ Most of it was an exposure lift (+3.8 dB, snapping in over 0.4 s); the rest
 was the busier no-rest patterns and the new overdrive. The lift is gone and
 the arps' overdrive is trimmed a little harder, leaving only the small bump
 the busier patterns make on their own.*
+
+*Measured after: the arps now step up ~1 dB into the drop (the busier patterns
+alone), and there is no step back down when the kit returns.*
+
+> Fade in a moving pink noise during the no-drums section that cuts out when
+> the drums reenter.
+
+*A riser: one pink-noise source, swept side to side once a bar by a single
+LFO — so it moves as one thing, not the two drifting noises of the earlier
+wash. It fades in across bars 20-28 on a square curve, creeping in and
+building late, while its low-pass opens from ~700 Hz to ~10 kHz, and it is
+cut dead on the kit's return. Its level was measured in isolation first and
+set to peak about 7 dB under the drop's mix.*
