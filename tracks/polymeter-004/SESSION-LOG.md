@@ -296,3 +296,19 @@ eight clap-only bars to its opening state — plucky, front, delay back at its
 initial send and feedback — lifted to be heard over the denser kit, and stays
 there. With the delay back at its opening 4 s decay the outro feedback would
 have died in a bar, so the comb's decay is pushed 8 s longer for the outro.*
+
+> Keep the claps when the real drums first enter. And reduce the crushing
+> further. That should not be a dominant effect in this track after all. We
+> should work more in noise and regular distortion.
+
+*The framing claps now carry on from bar 3 through the 5/4 section, landing
+with the kick on each cell's 1 and the snare on its 5. The crush arc became a
+dirt arc: same shape and soft cap, but it now drives regular distortion and
+noise, with crushing reduced to a trace. On the drum bus: a tanh drive from
+barely-there to overdriven at the peak, and pink noise gated by the kit's own
+envelope so every hit trails grit that thickens with the arc; the crusher's
+wet share drops from up to 0.74 to under 0.15, with finer bits and a faster
+latch. On the main bus: a parallel tanh saturation and a stereo pink-noise
+wash, both on the arc; main-bus crushing drops from a 0.4 peak to 0.08. The
+arps' crush share drops to about a quarter of what it was, leaving their own
+saturation to do the work.*

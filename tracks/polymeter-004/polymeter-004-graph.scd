@@ -13,47 +13,44 @@
 //   deep    |X            X                |                  beat 1 and 7-and
 //
 // Bass is voice 2 of polymeter-003 (the warm Karplus-Strong pluck) dropped
-// to E1, and it transforms across the track: front and centre and slapped at
-// the top, then progressively further back, longer and more sustained, on a
-// 3-step delay with high feedback. See the bass arc below. Each cell accents 1, 2-and and 3-and — a front-loaded 3-2 kick-off
-// then five eighths of air — with ghost notes filling the tail, placed
-// differently in each cell so the bar reads as a 15/4 phrase and not as one
-// cell played three times. Every pitch in the track — bass, arps and the
-// deep marker — is E minor pentatonic (E G A B D) in just intonation. The
-// three cells centre on E, G and D, and the line inside each leaps rather
-// than walks, changing direction on nearly every hit; the last cell sags to
-// a low D before picking its way home. Nothing resolves — it just leans back
-// onto E on every downbeat.
+// to E1, on a bright 3-step delay. Each cell accents 1, 2-and and 3-and — a
+// front-loaded 3-2 kick-off then five eighths of air — with ghost notes
+// filling the tail, placed differently in each cell so the bar reads as a
+// 15/4 phrase and not as one cell played three times. It recedes through
+// the first half and walks back out across the drop; see the bass arc below.
 //
-// Drums are the polymeter-002 rack, bitcrushed the way that track crushes
-// its drop: latch-downsampled at a wandering rate and quantized to ~4 bits,
-// mixed against the dry so the kick keeps its punch. The kick is
-// four-on-the-floor — every one of the 15 quarters, accented on the five
-// group heads — so the 3-grouping is carried by the hat accents, while the
-// snare deliberately runs across it in twos. That stacks the bar four deep:
+// Every pitch in the track — bass, arps, deep marker, kick and snare body —
+// is E minor pentatonic (E G A B D) in just intonation. The three bass cells
+// centre on E, G and D, and the line inside each leaps rather than walks,
+// changing direction on nearly every hit; the last cell sags to a low D
+// before picking its way home. Nothing resolves — it just leans back onto E
+// on every downbeat.
 //
-//   kick   every 1 quarter    15 hits
-//   snare  every 2            beats 2 4 6 8 10 12 14, +15 to pin the phase
-//          (and from the moment it lands, the kick drops four-on-the-floor
-//           for a syncopated two-step that interlocks with it)
-//   hat    accents every 3    the five group heads
-//   bass   cells of 5         three per bar
+// Drums are the polymeter-002 rack plus polymeter-001's clap, and they change
+// grouping section by section: claps framing the bass's fives, then a 5/4
+// two-step, then the clap's 3-2 alone, then a two-step whose backbeat runs
+// in twos against everything else:
+//
+//   bass    cells of 5          three per bar
+//   hat     accents every 3     the five group heads
+//   snare   every 2 (bar 28+)   beats 2 4 6 8 10 12 14, +15 to pin the phase
 //
 // 15 is the least common multiple of 3 and 5, so those two only ever meet on
-// the downbeat; 2 does not divide 15 at all, which is why the snare needs its
-// beat-15 hit to keep from flipping over bar to bar.
+// the downbeat; 2 does not divide 15 at all, which is why that backbeat needs
+// its beat-15 hit to keep from flipping over bar to bar.
+//
+// The track's dirt is distortion and noise on one arc that peaks at the
+// drop; bitcrushing is only a trace in it. See the dirt arc below.
 //
 // Under all of it, polymeter-003's voice 1 — the deep drone-bass pluck —
 // marks just two points in the bar: beat 1 and the and of beat 7 (grid steps
 // 0 and 13). Thirteen steps apart, then seventeen back round, so the bar is
-// pinned lopsidedly; step 13 is an odd step, so it lands off the
-// four-on-the-floor kick entirely. It takes E under cell A and G under cell
-// B, tracking the root motion.
+// pinned lopsidedly. It takes E under cell A and G under cell B.
 //
-// Two of polymeter-003's lighter voices arp on top: its small bell (voice 6)
-// on a 6-step cycle, which divides 30 exactly and so locks to the drum
-// groups, and its glass (voice 8) on an 8-step cycle, which does not — it
-// shifts 6 steps every bar and comes back round every 4 bars.
+// Two of polymeter-003's lighter voices arp on top, hard left and right: its
+// small bell (voice 6) on a 6-step cycle, which divides 30 exactly and so
+// locks to the drum groups, and its glass (voice 8) on an 8-step cycle,
+// which does not — it shifts 6 steps every bar and comes back round every 4.
 //
 // The build:
 //   bar 1   bass and the deep bar-marker alone — a two-bar intro
@@ -62,10 +59,11 @@
 //   bar 7   the kit proper, in a 5/4 two-step: snare on 2-and and 5 of every
 //           five-beat cell, kick on 1 and 3-and, so kick and snare alternate
 //           3-2-3-2 — plus polymeter-002's scattered 32nd-note jungle bursts
-//           and the hat doubling to a 16th line
+//           and the hat doubling to a 16th line. The claps carry on through
+//           it, doubling the kick on each cell's 1 and the snare on its 5.
 //   bar 11  both arps at once — the 6-step bell hard left, the 8-step glass
 //           hard right, arriving together so the split opens in one move
-//   bar 20  halfway, and the peak of the crush arc: the kit cuts out and
+//   bar 20  halfway, and the peak of the dirt arc: the kit cuts out and
 //           polymeter-001's clap takes over alone on the full 3-2 pattern
 //           (1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15). The arps
 //           switch to a second, more active form, and the plucky bass walks
@@ -109,23 +107,24 @@
 	// glass at the same nominal amp, so these are not the same number
 	var arp6Amp  = 0.25;
 	var arp8Amp  = 0.40;
-	// Crushing is an arc across the whole piece, not a setting: a half-sine
-	// over the full length, starting near zero and peaking exactly at the
-	// midpoint — bar 20, where the kit cuts out.
-	// The arc is soft-capped: below crushKnee it is untouched (that is the
-	// level the two-step drums arrive at in bar 7, ~0.45), and above it the
-	// curve is compressed so the peak lands at crushCap instead of 1. It still
-	// has a clear peak rather than a plateau — just a lower one.
-	var crushKnee = 0.45;
-	var crushCap  = 0.8;
-	var drumCrushMax  = 0.9;     // wet share of the drum crusher at arc = 1
-	var crushDriveMax = 6.2;     // (the cap means neither is ever reached)
-	// the same arc also runs a crusher on the main bus for the whole track —
-	// everything, not just the drums, and not just around the drop. Its wet
-	// share follows the arc linearly, and its severity (latch rate, bit
-	// depth, drive) scales with it too, so it is a faint grain early on and
-	// real damage only near the peak.
-	var masterCrushMax = 0.5;
+	// The dirt arc: a half-sine over the full length, starting near zero and
+	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It
+	// drives regular distortion and noise; bitcrushing is only a trace in it.
+	// It is soft-capped: below dirtKnee it is untouched (the level the
+	// two-step drums arrive at in bar 7, ~0.45), and above it the curve is
+	// compressed so the peak lands at dirtCap instead of 1 — still a clear
+	// peak, not a plateau. Every max below is "at arc = 1", so the cap means
+	// none of them is ever quite reached.
+	var dirtKnee = 0.45;
+	var dirtCap  = 0.8;
+	var drumDriveMax  = 3.5;     // tanh drive on the drum bus
+	var drumNoiseAmt  = 0.9;     // pink noise riding the drum hits
+	var drumCrushMax  = 0.18;    // the drum crusher — a trace, not a sound
+	// the main bus, the whole track: a parallel tanh saturation, a stereo
+	// pink-noise wash, and a faint trace of crushing
+	var mixSatMax     = 0.45;    // wet share of the main-bus saturation
+	var noiseBedAmp   = 0.12;    // the noise wash
+	var masterCrushMax = 0.1;
 	var revMix   = 0.2;          // the shared room, same as track 3
 
 	// the bar on a 30-eighth grid. Rows are the three bass cells;
@@ -246,7 +245,7 @@
 	var drumGate, snareGate, kitGate, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
-	var crushArc, drumCrush, crushDrive, masterCrush, mixCrushed;
+	var dirtArc, drumCrush, drumDrive, drumNoise, masterCrush, mixCrushed, mixSat, noiseBed;
 	var outroGate, outroDuck;
 	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift;
 	var mix, master;
@@ -255,7 +254,6 @@
 
 	clk = Impulse.ar(q * 2);     // the eighth-note clock: 30 steps to the bar
 
-	// the crush arc: 0 -> 1 -> 0 across the piece, peaking at the midpoint
 	// the outro: at bar 37 every percussion layer stops and the bass stops
 	// being played. The comb delay keeps regenerating from its own feedback,
 	// so what is left is the arps over a bass that is only echoes of itself.
@@ -265,11 +263,13 @@
 	outroDuck = Lag.kr(outroGate, 1.2);
 
 	rawArc      = ((elapsed / total).clip(0, 1) * pi).sin;
-	crushArc    = rawArc - ((rawArc - crushKnee).max(0)
-		* (1 - ((crushCap - crushKnee) / (1 - crushKnee))));
-	drumCrush   = 0.12 + ((drumCrushMax - 0.12) * crushArc);
-	crushDrive  = 1.2 + ((crushDriveMax - 1.2) * crushArc);
-	masterCrush = crushArc * masterCrushMax;
+	// the dirt arc: 0 -> 1 -> 0 across the piece, peaking at the midpoint,
+	// soft-capped above the knee
+	dirtArc     = rawArc - ((rawArc - dirtKnee).max(0)
+		* (1 - ((dirtCap - dirtKnee) / (1 - dirtKnee))));
+	drumDrive   = 1.3 + ((drumDriveMax - 1.3) * dirtArc);
+	drumCrush   = 0.03 + ((drumCrushMax - 0.03) * dirtArc);
+	masterCrush = dirtArc * masterCrushMax;
 
 	// ---- bass: polymeter-003's voice 2, an octave down ----
 	// The trigger carries its own velocity, so Latch holds it for the whole
@@ -405,25 +405,30 @@
 	drums = ((kick * kickLvl) + (snare * snareLvl) + (snare2 * burstLvl)
 		+ (hat * hatLvl) + (hat16 * hat16Lvl)) * drumAmp;
 
-	// the track-2 crusher on the drum bus: latch-downsampled at a wandering
-	// rate, quantized, driven — all following the capped crush arc. The dry
-	// share is what keeps the kick's punch.
-	// sample rate and bit depth both collapse as the arc rises: the latch
-	// runs 5x faster and 2.6 bits deeper at the extremes than at the peak
-	drumsCrushed = (Latch.ar(drums, Impulse.ar(
-		LFNoise2.kr(0.5).exprange(600, 3200) * (1 + (4 * (1 - crushArc)))))
-		.round(2 ** (LFNoise2.kr(0.4).range(4.4, 6.0) - (2.6 * crushArc)).neg * 2)
-		* crushDrive).tanh * 1.1;
-	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush);
+	// the drum bus's dirt, all on the arc. Regular distortion first: a tanh
+	// drive that goes from barely-there at bar 7 to properly overdriven at the
+	// peak and back...
+	drums = (drums * drumDrive).tanh * 1.1;
+	// ...then noise riding the hits: pink noise band-passed around the snare's
+	// crack, gated by the kit's own envelope, so every hit trails grit that
+	// thickens as the arc rises...
+	drumNoise = BPF.ar(PinkNoise.ar(2), 2800, 1.4)
+	* Amplitude.ar(drums, 0.002, 0.09) * drumNoiseAmt * dirtArc;
+	// ...and only a trace of the old polymeter-002 crusher, with a faster
+	// latch and finer bits than it used to have
+	drumsCrushed = Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(2500, 9000)))
+		.round(2 ** LFNoise2.kr(0.4).range(4.5, 6.5).neg * 2);
+	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush) + drumNoise;
 
 	// ---- the clap: polymeter-001's multi-burst clap ----
 	// Three delayed noise bursts smeared 11 and 23 ms behind the first — the
-	// classic clap stack. Deliberately outside the drum bus and its crusher:
-	// the drum crusher rounds transients off, and this needs to hit bare and
-	// hard. It plays twice: framing the bass cells in bars 3-6 before the kit
-	// exists, then the full 3-2 pattern from the drop to the outro.
+	// classic clap stack. Deliberately outside the drum bus and its drive:
+	// the bus distortion rounds transients off, and this needs to hit bare and
+	// hard. It plays twice: framing the bass cells from bar 3 — alone at
+	// first, then carrying on over the 5/4 kit — and the full 3-2 pattern
+	// from the drop to the outro.
 	clapTrig = clk * (
-		(Demand.ar(clk, 0, Dseq(clapIntroMask, inf)) * sec1)
+		(Demand.ar(clk, 0, Dseq(clapIntroMask, inf)) * (sec1 + sec2))
 		+ (Demand.ar(clk, 0, Dseq(clapMask, inf))
 			* (elapsed >= ((clapBar * barDur) - 0.01)) * outroGate));
 	clapEnv  = Decay2.ar(clapTrig, 0.001, 0.2)
@@ -454,11 +459,12 @@
 	arp6 = (SinOsc.ar(arp6F, 0, Decay2.ar(arp6Trig, 0.002, 0.6))
 		+ (SinOsc.ar(arp6F * 3, 0, Decay2.ar(arp6Trig, 0.002, 0.25)) * 0.4)) * 0.8;
 	// saturation that grows from its entry to the last bar, plus a share of
-	// the global crush arc — so the arps dirty up along with everything else
+	// a trace of crushing on the dirt arc — so the arps dirty up along with
+	// everything else, mostly through the saturation
 	arp6 = (arp6 * (1.2 + (4.5 * arpEvo))).tanh * (1 - (0.3 * arpEvo));
-	arp6 = (arp6 * (1 - (0.5 * crushArc)))
+	arp6 = (arp6 * (1 - (0.12 * dirtArc)))
 	+ (Latch.ar(arp6, Impulse.ar(LFNoise2.kr(0.35).exprange(1400, 7000)))
-		.round(2 ** LFNoise2.kr(0.3).range(3.0, 5.0).neg * 2) * (0.5 * crushArc));
+		.round(2 ** LFNoise2.kr(0.3).range(3.0, 5.0).neg * 2) * (0.12 * dirtArc));
 
 	arp8Trig = clk * (elapsed >= ((arpBar * barDur) - 0.01))
 	* ((Demand.ar(clk, 0, Dseq(arp8Mask, inf))    * (1 - arpAlt))
@@ -471,9 +477,9 @@
 	arp8 = (SinOsc.ar(arp8F * 2, 0, Decay2.ar(arp8Trig, 0.001, 0.18))
 		+ (SinOsc.ar(arp8F * 4, 0, Decay2.ar(arp8Trig, 0.001, 0.09)) * 0.5)) * 0.7;
 	arp8 = (arp8 * (1.15 + (3.8 * arpEvo))).tanh * (1 - (0.28 * arpEvo));
-	arp8 = (arp8 * (1 - (0.45 * crushArc)))
+	arp8 = (arp8 * (1 - (0.1 * dirtArc)))
 	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
-		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.45 * crushArc));
+		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.1 * dirtArc));
 
 	// bassAmp scales the WHOLE bass layer, wet paths included — applying it
 	// only to the dry path left the delay and reverb outside the knob, so
@@ -482,17 +488,29 @@
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
 	+ Pan2.ar(arp6, -0.88, arp6Amp * arpLift) + Pan2.ar(arp8, 0.88, arp8Amp * arpLift);
+	// a stereo pink-noise wash on the dirt arc: two independent noises, each
+	// band-passed around its own slowly wandering centre, so the air of the
+	// track thickens toward the drop and thins out after. It goes in before
+	// the room and the glue, so it sits in the space and ducks under loud
+	// passages rather than floating on top.
+	noiseBed = [0, 1].collect { |i|
+		BPF.ar(PinkNoise.ar, LFNoise2.kr(0.05 + (i * 0.013)).exprange(700, 4500), 0.9)
+	};
+	mix = mix + (noiseBed * noiseBedAmp * dirtArc * outroDuck);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;
-	// the main-bus crusher, running the whole track on the same arc. Its
-	// severity scales too: at low arc it latches 4x faster, keeps 2 more bits
-	// and barely drives, so early on it is grain rather than damage.
+	// main-bus distortion on the arc: a parallel tanh saturation, blended in
+	// up to mixSatMax at the peak. Parallel, so the transients stay in the
+	// dry share while the saturated share thickens everything underneath.
+	mixSat = (mix * 2.5).tanh * 0.5;
+	mix = (mix * (1 - (mixSatMax * dirtArc))) + (mixSat * (mixSatMax * dirtArc));
+	// and a faint trace of crushing, its severity scaling with the arc
 	mixCrushed = (Latch.ar(mix, Impulse.ar(LFNoise2.kr(0.4).exprange(900, 5000)
-		* (1 + (3 * (1 - (crushArc / crushCap))))))
+		* (1 + (3 * (1 - (dirtArc / dirtCap))))))
 		.round(2 ** (LFNoise2.kr(0.3).range(2.4, 4.2)
-			+ (2 * (1 - (crushArc / crushCap)))).neg * 2)
-		* (1 + (1.8 * (crushArc / crushCap)))).tanh * 0.85;
+			+ (2 * (1 - (dirtArc / dirtCap)))).neg * 2)
+		* (1 + (1.8 * (dirtArc / dirtCap)))).tanh * 0.85;
 	mix = (mix * (1 - masterCrush)) + (mixCrushed * masterCrush);
 	// two bars of outro, then two bars of fade
 	master = EnvGen.kr(Env([1, 1, 0], [total - (2 * barDur), 2 * barDur], [0, -3]),
