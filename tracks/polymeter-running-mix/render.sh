@@ -15,7 +15,10 @@ mapfile -t jobs < <(python3 -c '
 import json
 t = json.load(open("timeline.json"))
 for p in t["parts"]:
-    print(p["name"], "%.6f" % (p["length"] * t["eighthNum"] / t["eighthDen"]))
+    # render the Limiter latency on top, so the stem still covers its whole
+    # length once assemble.py has trimmed that latency off the front
+    secs = p["length"] * t["eighthNum"] / t["eighthDen"] + t.get("latencySamples", 0) / t["sampleRate"]
+    print(p["name"], "%.6f" % secs)
 ')
 
 pids=()

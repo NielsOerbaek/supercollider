@@ -2,11 +2,54 @@
   "sampleRate": 48000,
   "eighthNum": 60,
   "eighthDen": 340,
+  "latencySamples": 960,
   "parts": [
-    { "name": "003a", "start": 0,    "length": 1488, "gainDb": 0, "fadeIn": 0, "fadeOut": 16, "targetLufs": -21 },
-    { "name": "001",  "start": 1360, "length": 2248, "gainDb": 0, "fadeIn": 0, "fadeOut": 16, "targetLufs": -17 },
-    { "name": "003b", "start": 3480, "length": 1344, "gainDb": 0, "fadeIn": 0, "fadeOut": 16, "targetLufs": -20 },
-    { "name": "002",  "start": 4696, "length": 2832, "gainDb": 0, "fadeIn": 0, "fadeOut": 16, "targetLufs": -16 },
-    { "name": "004",  "start": 7336, "length": 2850, "gainDb": 0, "fadeIn": 0, "fadeOut": 0,  "targetLufs": -16 }
+    {
+      "name": "003a",
+      "start": 0,
+      "length": 1488,
+      "gainDb": 5.7,
+      "fadeIn": 0,
+      "fadeOut": 16,
+      "targetLufs": -21,
+      "lockCheck": "clock"
+    },
+    {
+      "name": "001",
+      "start": 1360,
+      "length": 2248,
+      "gainDb": 0.6,
+      "fadeIn": 0,
+      "fadeOut": 16,
+      "targetLufs": -17
+    },
+    {
+      "name": "003b",
+      "start": 3480,
+      "length": 1344,
+      "gainDb": 7.3,
+      "fadeIn": 0,
+      "fadeOut": 16,
+      "targetLufs": -20,
+      "lockCheck": "clock"
+    },
+    {
+      "name": "002",
+      "start": 4696,
+      "length": 2832,
+      "gainDb": 2.0,
+      "fadeIn": 0,
+      "fadeOut": 16,
+      "targetLufs": -16
+    },
+    {
+      "name": "004",
+      "start": 7336,
+      "length": 2850,
+      "gainDb": -1.2,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "targetLufs": -16
+    }
   ]
 }

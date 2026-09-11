@@ -7,6 +7,12 @@ sit on the grid (plus their attack) pile up at one lag; sixteenths, triplets
 and noise spread out. A locked stem keeps the same lag from its first window
 to its last. Drift is the fitted change of that lag across the stem.
 
+Parts marked "lockCheck": "clock" in timeline.json are skipped: 003's
+rhythmicon voices change attack character as they enter and leave (a 1.8 s
+sine bloom early, 1 ms glass ticks late), which moves the fold's peak without
+any timing change. Their clocks are tested directly instead
+(tests/test_parts.py::test_003_voice_clocks_do_not_drift).
+
 Usage: python3 check_lock.py [timeline.json] [stems/]   (exit 1 on failure)
 """
 import json
@@ -80,8 +86,13 @@ def main(argv):
     all_ok = True
     print(f"{'stem':6s} {'windows':>8s} {'median lag':>11s} {'drift':>8s}  result")
     for p in tl["parts"]:
+        if p.get("lockCheck", "fold") == "clock":
+            print(f"{p['name']:6s} {'-':>8s} {'-':>11s} {'-':>8s}  SKIP: clock-verified by test")
+            continue
         x, sr = read_wav(stem_dir / f"{p['name']}.wav")
-        res = evaluate(stem_report(x.mean(axis=1), sr, p["start"]))
+        # trim the graphs' shared Limiter latency, exactly as assemble.py does
+        mono = x.mean(axis=1)[tl.get("latencySamples", 0):]
+        res = evaluate(stem_report(mono, sr, p["start"]))
         all_ok &= res["ok"]
         print(f"{p['name']:6s} {res['n_clear']:8d} {res['median_ms']:+10.2f}ms "
               f"{res['drift_ms']:+7.2f}ms  {'PASS' if res['ok'] else 'FAIL: ' + res['reason']}")

@@ -27,7 +27,12 @@ was.
 
 Renders offline (no audio hardware needed), normalizes to −16 LUFS with a
 flat gain, tags it from `track.conf`, and drops a timestamped mp3 in
-`tracks/<name>/renders/`. The filename carries the short commit hash the
+`tracks/<name>/renders/`.
+
+A track may instead provide an executable `render.sh`, which `make_mp3.sh`
+runs in place of `render.scd`; it must leave `render.wav` in the track
+directory. polymeter-running-mix uses this to render its parts as stems
+(cached, in parallel) and assemble them. The filename carries the short commit hash the
 render was built from, suffixed `-dirty` if the working tree had uncommitted
 changes — so commit before rendering if you want the mp3 to be traceable. With no argument it renders `tracks/polymeter-001`.
 
@@ -86,3 +91,9 @@ LFO paths differ between code versions even with the same seed.
   top in 6 and 8 steps — the 6 locking to the drum groups, the 8 rotating
   against the bar and coming round every fourth. All of it E minor
   pentatonic in just intonation, resolving nowhere.
+- **polymeter-running-mix** — 30 minutes at 170 for running: 003's first
+  section slowed into a warm-up, 001 run for three cycles, 003's second
+  section as an interlude with a long phasing hold, 002 stretched with a
+  second drop, and 004 stretched to 95 bars, handing over through a 12/8
+  against 15/4 crossover. Each part is a forked graph rendered as a stem and
+  placed on one sample-exact eighth-note grid, so the beat never moves.

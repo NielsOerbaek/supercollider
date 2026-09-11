@@ -6,6 +6,11 @@ whole internal clock to the global grid. Stems are cut to their timeline
 length, gained, faded (equal power) and summed in float32 — the sum may
 exceed full scale; make_mp3.sh's gain and limiter deal with that.
 
+Every part's graph ends in SuperCollider's Limiter, whose look-ahead delays
+its output by a fixed 960 samples (20 ms, measured). The same delay in every
+stem keeps the parts locked to each other, but puts the whole mix 20 ms
+behind the grid; timeline.json's latencySamples trims it from each stem.
+
 Usage: python3 assemble.py [timeline.json] [stems/] [render.wav]
 """
 import json
@@ -30,6 +35,7 @@ def assemble(timeline, stem_dir):
             raise ValueError(f"stem {p['name']}: {stem_sr} Hz, expected {sr}")
         if stem.shape[1] == 1:
             stem = np.repeat(stem, 2, axis=1)
+        stem = stem[timeline.get("latencySamples", 0):]
         s0, s1 = at(p["start"]), at(p["start"] + p["length"])
         n = s1 - s0
         if len(stem) < n:

@@ -94,3 +94,14 @@ def test_cli_writes_a_float_wav(tmp_path):
     assert r.returncode == 0, r.stderr
     y, sr = audio.read_wav(tmp_path / "out.wav")
     assert sr == 48000 and len(y) == audio.eighth_to_sample(64)
+
+
+def test_latency_is_trimmed_from_every_stem(tmp_path):
+    n = audio.eighth_to_sample(64) + 960
+    x = np.zeros((n, 2), np.float32)
+    x[960] = 0.5                        # the graph's first beat, 960 samples late
+    audio.write_wav_float(tmp_path / "a.wav", x, 48000)
+    tl = timeline([part("a", 100, 64)])
+    tl["latencySamples"] = 960
+    out = assemble.assemble(tl, tmp_path)
+    assert np.flatnonzero(out[:, 0])[0] == audio.eighth_to_sample(100)

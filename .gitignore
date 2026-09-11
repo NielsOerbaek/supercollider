@@ -3,3 +3,4 @@ tracks/*/renders/
 tracks/*/render.wav
 tracks/*/nrt.osc
 tracks/*/stems/
+__pycache__/
