@@ -345,3 +345,13 @@ drop. The grit riding the drum hits stays — it is not background.*
 and trade sides — at most ±0.6 instead of a fixed ±0.88, one full
 left-right-left every two bars, locked to the grid. Bar 11 falls on a whole
 number of cycles, so both arrive in the centre and fan out.*
+
+*Measured: in the drop the side channel now dips about 6 dB at every bar line,
+where the arps cross, and peaks mid-bar; hard-panned it had been flat.*
+
+> The noise should be pink noise
+
+*Read as the grit riding the drum hits, the only noise layer left. Its source
+was already pink, but band-passed narrowly around 2.8 kHz, so it came out as a
+hiss. Now full-band pink with only a 150 Hz high-pass to keep it off the
+kick's sub, at roughly the same energy as before.*

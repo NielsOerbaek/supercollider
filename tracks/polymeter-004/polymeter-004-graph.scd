@@ -43,7 +43,7 @@
 // at the drop; the instruments themselves — bass, arps, clap — sit fairly
 // clean through the first half and kick hard into overdrive once the drums
 // drop out, staying there to the end. Bitcrushing is only a trace, and the
-// only noise is the grit that rides the drum hits.
+// only noise is pink noise riding the drum hits.
 //
 // Under all of it, polymeter-003's voice 1 — the deep drone-bass pluck —
 // marks just two points in the bar: beat 1 and the and of beat 7 (grid steps
@@ -430,10 +430,13 @@
 	// drive that goes from barely-there at bar 7 to properly overdriven at the
 	// peak and back...
 	drums = (drums * drumDrive).tanh * 1.1;
-	// ...then noise riding the hits: pink noise band-passed around the snare's
-	// crack, gated by the kit's own envelope, so every hit trails grit that
-	// thickens as the arc rises...
-	drumNoise = BPF.ar(PinkNoise.ar(2), 2800, 1.4)
+	// ...then noise riding the hits: full-band pink noise, gated by the kit's
+	// own envelope, so every hit trails grit that thickens as the arc rises.
+	// Only a high-pass at 150 Hz keeps it off the kick's sub; it was once
+	// band-passed around 2.8 kHz, which made it a hiss rather than pink. The
+	// full band at unit level carries about the same energy as that slice did
+	// at double level, so drumNoiseAmt did not need to change...
+	drumNoise = HPF.ar(PinkNoise.ar, 150)
 	* Amplitude.ar(drums, 0.002, 0.09) * drumNoiseAmt * dirtArc;
 	// ...and only a trace of the old polymeter-002 crusher, with a faster
 	// latch and finer bits than it used to have
