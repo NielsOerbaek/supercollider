@@ -355,3 +355,19 @@ where the arps cross, and peaks mid-bar; hard-panned it had been flat.*
 was already pink, but band-passed narrowly around 2.8 kHz, so it came out as a
 hiss. Now full-band pink with only a 150 Hz high-pass to keep it off the
 kick's sub, at roughly the same energy as before.*
+
+> the 8-step arp sound is too soft. Make it the same sound as the 6-step arp,
+> but one octave above.
+
+> Are we still JI on E?
+
+*Yes — every pitched element is a JI ratio of E2; only the noise sources (hats,
+snare noise, clap, drum grit) are untuned. The 8-step arp is now the same
+voice-6 bell with the same chain as the 6-step; its pitch arrays already sat an
+octave above the 6-step's, so fed straight into the bell it plays an octave
+higher. Same voice, same amp, so the two are level.*
+
+> For the first clap pattern it should move the 11 hit to 12.
+
+*Beats 1 5 6 10 12 15: the third cell's opening clap lands a beat late, so the
+bar leans into its last cell rather than framing it like the first two.*

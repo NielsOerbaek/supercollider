@@ -50,22 +50,22 @@
 // 0 and 13). Thirteen steps apart, then seventeen back round, so the bar is
 // pinned lopsidedly. It takes E under cell A and G under cell B.
 //
-// Two of polymeter-003's lighter voices arp on top, swinging across each other: its
-// small bell (voice 6) on a 6-step cycle, which divides 30 exactly and so
-// locks to the drum groups, and its glass (voice 8) on an 8-step cycle,
-// which does not — it shifts 6 steps every bar and comes back round every 4.
+// Two arps on top, both polymeter-003's small bell (voice 6), swinging across
+// each other: one on a 6-step cycle, which divides 30 exactly and so locks to
+// the drum groups, and one an octave higher on an 8-step cycle, which does
+// not — it shifts 6 steps every bar and comes back round every 4.
 //
 // The build:
 //   bar 1   bass and the deep bar-marker alone — a two-bar intro
-//   bar 3   hat, and claps on 1 5 6 10 11 15 — the first and last beat of each
-//           bass cell. No kick at all yet.
+//   bar 3   hat, and claps on 1 5 6 10 12 15. No kick at all yet.
 //   bar 7   the kit proper, in a 5/4 two-step: snare on 2-and and 5 of every
 //           five-beat cell, kick on 1 and 3-and, so kick and snare alternate
 //           3-2-3-2 — plus polymeter-002's scattered 32nd-note jungle bursts
 //           and the hat doubling to a 16th line. The claps carry on through
-//           it, doubling the kick on each cell's 1 and the snare on its 5.
+//           it, landing with the snare on each cell's 5.
 //   bar 11  both arps at once, arriving together in the centre and swinging
-//           apart — the 6-step bell and 8-step glass trade sides every bar
+//           apart — the 6-step bell and the 8-step bell an octave above it
+//           trade sides every bar
 //   bar 20  halfway, and the peak of the dirt arc: the kit cuts out and
 //           polymeter-001's clap takes over alone on the full 3-2 pattern
 //           (1 2-and 3-and 5 6 7-and 8-and 10 11 12-and 13-and 15). The arps
@@ -106,10 +106,9 @@
 	var hatLvl   = 0.5;
 	var hat16Lvl = 0.42;         // the offbeat 16th drive
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
-	// measured equal: the bell voice is inherently ~5.4 dB hotter than the
-	// glass at the same nominal amp, so these are not the same number
+	// both arps are the same bell voice, so the same amp lands them level
 	var arp6Amp  = 0.25;
-	var arp8Amp  = 0.40;
+	var arp8Amp  = 0.25;
 	// the arps swing across each other: one pan LFO, mirrored between them,
 	// so they cross through the centre and trade sides. Locked to the grid —
 	// one full left-right-left every arpPanBars bars.
@@ -176,13 +175,14 @@
 
 	// the drums, same 30-eighth grid. Quarters are the even steps.
 	//
-	// bars 3-6: no kick. Claps on beats 1 5 6 10 11 15 — steps 0 8 10 18 20
-	// 28 — which is the first and last beat of each five-beat bass cell, so
-	// the claps frame the bass's grouping before the kit arrives.
+	// bars 3-19: claps on beats 1 5 6 10 12 15 — steps 0 8 10 18 22 28. The
+	// first two cells are framed by their first and last beat; the third cell
+	// pushes its opening clap a beat late, onto 12, so the bar leans into its
+	// last cell instead of repeating the frame a third time.
 	var clapIntroMask = [
-		1.0,  0, 0, 0, 0, 0, 0, 0, 0.85, 0,
-		0.95, 0, 0, 0, 0, 0, 0, 0, 0.85, 0,
-		0.95, 0, 0, 0, 0, 0, 0, 0, 0.85, 0
+		1.0,  0, 0, 0,    0, 0, 0, 0, 0.85, 0,
+		0.95, 0, 0, 0,    0, 0, 0, 0, 0.85, 0,
+		0,    0, 0.95, 0, 0, 0, 0, 0, 0.85, 0
 	];
 	// bars 7-19: a 5/4 two-step. Each ten-step cell is one 5/4 bar, counted
 	// 1 & 2 & 3 & 4 & 5 &. Snare on 2-and and 5 (cell steps 3 and 8); kick on
@@ -240,7 +240,7 @@
 	var arp6MaskAlt  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
 	var arp6PitchAlt = [4, 2, 32/9, 12/5, 3, 8/3];         // E4 E3 D4 G3 B3 A3
 	var arp8MaskAlt  = [1, 0.6, 0.85, 0.6, 0.9, 0.55, 0.8, 0.6];
-	var arp8PitchAlt = [8, 24/5, 64/9, 6, 16/3, 8, 4, 6];  // E5 G4 D5 B4 A4 E5 E4 B4
+	var arp8PitchAlt = [8, 24/5, 64/9, 6, 16/3, 8, 4, 6];  // E5 G4 D5 B4 A4 E5 E4 B4 (bell, fed directly)
 
 	// the two arps, on the same eighth grid but in their own cycle lengths.
 	// Pitches are the same E minor pentatonic pool as the bass (E G A B D),
@@ -505,19 +505,24 @@
 		* ((Demand.ar(clk, 0, Dseq(arp8Pitch, inf))    * (1 - arpAlt))
 			+ (Demand.ar(clk, 0, Dseq(arp8PitchAlt, inf)) * arpAlt)),
 		arp8Trig).max(20);
-	// voice 8 — glass (octave-pair sines, very short)
-	arp8 = (SinOsc.ar(arp8F * 2, 0, Decay2.ar(arp8Trig, 0.001, 0.18))
-		+ (SinOsc.ar(arp8F * 4, 0, Decay2.ar(arp8Trig, 0.001, 0.09)) * 0.5)) * 0.7;
-	arp8 = (arp8 * (1.15 + (3.8 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
-	* (1 - (0.28 * arpEvo)) * (1 - (0.3 * odRamp));
-	arp8 = LPF.ar(arp8, 11000 - (3000 * odRamp));
-	arp8 = (arp8 * (1 - (0.1 * dirtArc)))
-	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
-		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.1 * dirtArc));
+	// the same voice 6 bell and the same chain as the 6-step arp. Its pitch
+	// arrays already sit an octave above the 6-step's (E4-E5 against E3-D4),
+	// so fed straight into the bell it plays an octave higher. (It used to be
+	// voice 8, the glass, which read too soft against everything else.)
+	arp8 = (SinOsc.ar(arp8F, 0, Decay2.ar(arp8Trig, 0.002, 0.6))
+		+ (SinOsc.ar(arp8F * 3, 0, Decay2.ar(arp8Trig, 0.002, 0.25)) * 0.4)) * 0.8;
+	arp8 = (arp8 * (1.2 + (4.5 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
+	* (1 - (0.3 * arpEvo)) * (1 - (0.3 * odRamp));
+	arp8 = LPF.ar(arp8, 9000 - (3000 * odRamp));
+	// the crush trace keeps its own latch clock, so the two arps' grain
+	// doesn't lock together
+	arp8 = (arp8 * (1 - (0.12 * dirtArc)))
+	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(1400, 7000)))
+		.round(2 ** LFNoise2.kr(0.26).range(3.0, 5.0).neg * 2) * (0.12 * dirtArc));
 
 	// at their entry (bar 11, a whole number of pan cycles in) the LFO is at
-	// zero, so both arrive in the centre and fan out — bell drifting left,
-	// glass right — before crossing back over
+	// zero, so both arrive in the centre and fan out — the lower bell
+	// drifting left, the higher one right — before crossing back over
 	arpPan = SinOsc.kr(1 / (arpPanBars * barDur)) * arpPanWidth;
 
 	// bassAmp scales the WHOLE bass layer, wet paths included — applying it
