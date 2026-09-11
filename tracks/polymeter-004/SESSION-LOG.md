@@ -380,3 +380,12 @@ drum bus at a fixed 40% wet, its settings frozen at the character it had when
 the two-step drums arrived in bar 7 (latch ~1.9-10 kHz, ~3-5 bits, drive 3.5).
 The noise layer was a separate sound laid over the hits; the crusher's grain
 is made from the kit's own signal, which is why it sits inside it.*
+
+> When the drums drop out the arps very suddenly get a lot louder, which is a
+> bit jarring. Maybe leave them at the old amount or only bump a little.
+
+*Measured: +5.9 dB from bar 20 to bar 21, then -3.7 dB when the kit returned.
+Most of it was an exposure lift (+3.8 dB, snapping in over 0.4 s); the rest
+was the busier no-rest patterns and the new overdrive. The lift is gone and
+the arps' overdrive is trimmed a little harder, leaving only the small bump
+the busier patterns make on their own.*

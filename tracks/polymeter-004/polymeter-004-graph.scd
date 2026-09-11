@@ -235,9 +235,11 @@
 
 	// From bar 20 — the eight bars where the clap plays alone and the arps are
 	// the only melodic movement left — both arps take a second, more active
-	// form: no rests, wider leaps, and a level lift while they are exposed.
-	// They keep the new material after the kit returns; it is a development,
-	// not a detour.
+	// form: no rests and wider leaps. They keep the new material after the
+	// kit returns; it is a development, not a detour. The busier patterns
+	// make them ~1 dB louder on their own — that small bump is all they get.
+	// (An extra exposure lift of +3.8 dB, snapping in over 0.4 s, made the
+	// drop jump ~6 dB in a bar and fall ~4 dB when the kit came back.)
 	var arp6MaskAlt  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
 	var arp6PitchAlt = [4, 2, 32/9, 12/5, 3, 8/3];         // E4 E3 D4 G3 B3 A3
 	var arp8MaskAlt  = [1, 0.6, 0.85, 0.6, 0.9, 0.55, 0.8, 0.6];
@@ -263,7 +265,7 @@
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
 	var dirtArc, drumDrive, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
-	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift, arpPan;
+	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpPan;
 	var mix, master;
 
 	RandSeed.ir(1, 20260910); // reproducible renders
@@ -467,8 +469,6 @@
 	// so neither loses its place in its own cycle
 	arpAlt  = elapsed >= ((clapBar * barDur) - 0.01);
 	arpEvo  = ((elapsed - (arpBar * barDur)) / (total - (arpBar * barDur))).clip(0, 1);
-	arpLift = 1 + (0.55 * Lag.kr((elapsed >= (clapBar * barDur))
-		* (elapsed < (kitReturnBar * barDur)), 0.4));
 
 	arp6Trig = clk * (elapsed >= ((arpBar * barDur) - 0.01))
 	* ((Demand.ar(clk, 0, Dseq(arp6Mask, inf))    * (1 - arpAlt))
@@ -486,7 +486,7 @@
 	// after the drop odRamp overdrives it hard, and the low-pass closes in a
 	// little as it does — so it thickens like an amp rather than fizzing
 	arp6 = (arp6 * (1.2 + (4.5 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
-	* (1 - (0.3 * arpEvo)) * (1 - (0.3 * odRamp));
+	* (1 - (0.3 * arpEvo)) * (1 - (0.42 * odRamp));
 	arp6 = LPF.ar(arp6, 9000 - (3000 * odRamp));
 	arp6 = (arp6 * (1 - (0.12 * dirtArc)))
 	+ (Latch.ar(arp6, Impulse.ar(LFNoise2.kr(0.35).exprange(1400, 7000)))
@@ -506,7 +506,7 @@
 	arp8 = (SinOsc.ar(arp8F, 0, Decay2.ar(arp8Trig, 0.002, 0.6))
 		+ (SinOsc.ar(arp8F * 3, 0, Decay2.ar(arp8Trig, 0.002, 0.25)) * 0.4)) * 0.8;
 	arp8 = (arp8 * (1.2 + (4.5 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
-	* (1 - (0.3 * arpEvo)) * (1 - (0.3 * odRamp));
+	* (1 - (0.3 * arpEvo)) * (1 - (0.42 * odRamp));
 	arp8 = LPF.ar(arp8, 9000 - (3000 * odRamp));
 	// the crush trace keeps its own latch clock, so the two arps' grain
 	// doesn't lock together
@@ -525,7 +525,7 @@
 	mix = Pan2.ar(bassDry * bassLvl, -0.08) + Pan2.ar(bassDel * bassLvl, 0.22)
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
-	+ Pan2.ar(arp6, arpPan.neg, arp6Amp * arpLift) + Pan2.ar(arp8, arpPan, arp8Amp * arpLift);
+	+ Pan2.ar(arp6, arpPan.neg, arp6Amp) + Pan2.ar(arp8, arpPan, arp8Amp);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;
