@@ -312,3 +312,8 @@ latch. On the main bus: a parallel tanh saturation and a stereo pink-noise
 wash, both on the arc; main-bus crushing drops from a 0.4 peak to 0.08. The
 arps' crush share drops to about a quarter of what it was, leaving their own
 saturation to do the work.*
+
+*First render of that: crest factor rose through the peak (5.1 → 6.7 in the
+drop), so the crushed squash was gone — but the noise wash measured as no
+change at all to the floor between clap hits, buried roughly 15 dB under
+everything else. Raised it about 12 dB, and the drum-hit noise by 4.*
