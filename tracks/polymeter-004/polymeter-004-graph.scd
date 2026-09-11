@@ -39,8 +39,11 @@
 // the downbeat; 2 does not divide 15 at all, which is why that backbeat needs
 // its beat-15 hit to keep from flipping over bar to bar.
 //
-// The track's dirt is distortion and noise on one arc that peaks at the
-// drop; bitcrushing is only a trace in it. See the dirt arc below.
+// The track's dirt is overdrive. The drum bus drives on an arc that peaks
+// at the drop; the instruments themselves — bass, arps, clap — sit fairly
+// clean through the first half and kick hard into overdrive once the drums
+// drop out, staying there to the end. Bitcrushing is only a trace, and the
+// only noise is the grit that rides the drum hits.
 //
 // Under all of it, polymeter-003's voice 1 — the deep drone-bass pluck —
 // marks just two points in the bar: beat 1 and the and of beat 7 (grid steps
@@ -109,7 +112,7 @@
 	var arp8Amp  = 0.40;
 	// The dirt arc: a half-sine over the full length, starting near zero and
 	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It
-	// drives regular distortion and noise; bitcrushing is only a trace in it.
+	// drives the drum bus's overdrive and hit-noise, and traces of crushing.
 	// It is soft-capped: below dirtKnee it is untouched (the level the
 	// two-step drums arrive at in bar 7, ~0.45), and above it the curve is
 	// compressed so the peak lands at dirtCap instead of 1 — still a clear
@@ -122,14 +125,16 @@
 	// the noise amounts below are calibrated, not round numbers
 	var drumNoiseAmt  = 6;       // pink noise riding the drum hits
 	var drumCrushMax  = 0.18;    // the drum crusher — a trace, not a sound
-	// the main bus, the whole track: a parallel tanh saturation, a stereo
-	// pink-noise wash, and a faint trace of crushing
-	var mixSatMax     = 0.45;    // wet share of the main-bus saturation
-	// the noise wash: measured in isolation at 0.5 it sat 20 dB under the
-	// floor between hits in the drop. 3.5 puts it ~3 dB under that floor at
-	// the arc's peak — clearly there as air and hiss, not on top of anything
-	var noiseBedAmp   = 3.5;
+	// a faint trace of crushing on the main bus, the whole track
 	var masterCrushMax = 0.1;
+	// Instrument overdrive — a separate curve from the dirt arc. odRamp is 0
+	// through the first half, climbs over the two bars after the drums drop
+	// out (bars 20-22), and stays at 1 to the end. Each value is how much
+	// EXTRA drive that instrument gets at full: 1.5 means 2.5x its own drive.
+	var bassOD    = 1.5;
+	var arpOD     = 1.5;
+	var clapDrive = 4.5;         // the clap's own drive, the whole track
+	var clapOD    = 0.8;         // and on top of that after the drop
 	var revMix   = 0.2;          // the shared room, same as track 3
 
 	// the bar on a 30-eighth grid. Rows are the three bass cells;
@@ -250,7 +255,7 @@
 	var drumGate, snareGate, kitGate, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
-	var dirtArc, drumCrush, drumDrive, drumNoise, masterCrush, mixCrushed, mixSat, noiseBed;
+	var dirtArc, drumCrush, drumDrive, drumNoise, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
 	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift;
 	var mix, master;
@@ -273,6 +278,9 @@
 	dirtArc     = rawArc - ((rawArc - dirtKnee).max(0)
 		* (1 - ((dirtCap - dirtKnee) / (1 - dirtKnee))));
 	drumDrive   = 1.3 + ((drumDriveMax - 1.3) * dirtArc);
+	// the instruments' overdrive: nothing extra until the drums drop out,
+	// then all the way in over two bars, and it stays
+	odRamp      = ((elapsed - (clapBar * barDur)) / (2 * barDur)).clip(0, 1);
 	drumCrush   = 0.03 + ((drumCrushMax - 0.03) * dirtArc);
 	masterCrush = dirtArc * masterCrushMax;
 
@@ -308,7 +316,10 @@
 	bassDecay = 2 + (7 * bassRamp);
 	bass = Pluck.ar(WhiteNoise.ar(0.8), bassTrig, 0.05, 1/bassF,
 		bassDecay, 0.4 - (0.12 * bassRamp));
-	bass = (bass * (2.2 - (1.35 * bassRamp))).tanh * Lag.ar(bassVel, 0.002);
+	// its own drive follows the arc; odRamp stacks overdrive on top after the
+	// drop — the pick attack survives it, so it stays plucky and in view
+	bass = (bass * (2.2 - (1.35 * bassRamp)) * (1 + (bassOD * odRamp))).tanh
+	* (1 - (0.25 * odRamp)) * Lag.ar(bassVel, 0.002);
 	bass = bass + (SinOsc.ar(bassF, 0,
 		Decay2.ar(bassTrig, 0.004, 0.3 + (0.7 * bassRamp))) * bassVel * 0.6);
 	bass = LPF.ar(bass, 5000 - (3400 * bassRamp));
@@ -440,7 +451,11 @@
 	+ Decay2.ar(DelayN.ar(clapTrig, 0.03, 0.011), 0.001, 0.1)
 	+ Decay2.ar(DelayN.ar(clapTrig, 0.03, 0.023), 0.001, 0.08);
 	clap = BPF.ar(WhiteNoise.ar(2), 1800, 0.7) * clapEnv;
-	clap = (clap * 1.8).tanh * clapAmp;
+	// driven hard the whole way, and harder again after the drop; trimmed as
+	// it goes, since squaring it off raises its level. The low-pass keeps the
+	// overdrive from turning to fizz.
+	clap = (clap * clapDrive * (1 + (clapOD * odRamp))).tanh;
+	clap = LPF.ar(clap, 7500) * clapAmp * 0.85 * (1 - (0.2 * odRamp));
 
 	// ---- the two arps: polymeter-003's voices 6 and 8, verbatim ----
 	// Pitch is demanded on every step so the mask and the note cycle stay
@@ -466,7 +481,11 @@
 	// saturation that grows from its entry to the last bar, plus a share of
 	// a trace of crushing on the dirt arc — so the arps dirty up along with
 	// everything else, mostly through the saturation
-	arp6 = (arp6 * (1.2 + (4.5 * arpEvo))).tanh * (1 - (0.3 * arpEvo));
+	// after the drop odRamp overdrives it hard, and the low-pass closes in a
+	// little as it does — so it thickens like an amp rather than fizzing
+	arp6 = (arp6 * (1.2 + (4.5 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
+	* (1 - (0.3 * arpEvo)) * (1 - (0.3 * odRamp));
+	arp6 = LPF.ar(arp6, 9000 - (3000 * odRamp));
 	arp6 = (arp6 * (1 - (0.12 * dirtArc)))
 	+ (Latch.ar(arp6, Impulse.ar(LFNoise2.kr(0.35).exprange(1400, 7000)))
 		.round(2 ** LFNoise2.kr(0.3).range(3.0, 5.0).neg * 2) * (0.12 * dirtArc));
@@ -481,7 +500,9 @@
 	// voice 8 — glass (octave-pair sines, very short)
 	arp8 = (SinOsc.ar(arp8F * 2, 0, Decay2.ar(arp8Trig, 0.001, 0.18))
 		+ (SinOsc.ar(arp8F * 4, 0, Decay2.ar(arp8Trig, 0.001, 0.09)) * 0.5)) * 0.7;
-	arp8 = (arp8 * (1.15 + (3.8 * arpEvo))).tanh * (1 - (0.28 * arpEvo));
+	arp8 = (arp8 * (1.15 + (3.8 * arpEvo)) * (1 + (arpOD * odRamp))).tanh
+	* (1 - (0.28 * arpEvo)) * (1 - (0.3 * odRamp));
+	arp8 = LPF.ar(arp8, 11000 - (3000 * odRamp));
 	arp8 = (arp8 * (1 - (0.1 * dirtArc)))
 	+ (Latch.ar(arp8, Impulse.ar(LFNoise2.kr(0.29).exprange(2000, 9000)))
 		.round(2 ** LFNoise2.kr(0.26).range(3.4, 5.4).neg * 2) * (0.1 * dirtArc));
@@ -493,24 +514,11 @@
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
 	+ Pan2.ar(arp6, -0.88, arp6Amp * arpLift) + Pan2.ar(arp8, 0.88, arp8Amp * arpLift);
-	// a stereo pink-noise wash on the dirt arc: two independent noises, each
-	// band-passed around its own slowly wandering centre, so the air of the
-	// track thickens toward the drop and thins out after. It goes in before
-	// the room and the glue, so it sits in the space and ducks under loud
-	// passages rather than floating on top.
-	noiseBed = [0, 1].collect { |i|
-		BPF.ar(PinkNoise.ar, LFNoise2.kr(0.05 + (i * 0.013)).exprange(700, 4500), 0.9)
-	};
-	mix = mix + (noiseBed * noiseBedAmp * dirtArc * outroDuck);
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;
-	// main-bus distortion on the arc: a parallel tanh saturation, blended in
-	// up to mixSatMax at the peak. Parallel, so the transients stay in the
-	// dry share while the saturated share thickens everything underneath.
-	mixSat = (mix * 2.5).tanh * 0.5;
-	mix = (mix * (1 - (mixSatMax * dirtArc))) + (mixSat * (mixSatMax * dirtArc));
-	// and a faint trace of crushing, its severity scaling with the arc
+	// a faint trace of crushing on the main bus, its severity scaling with
+	// the arc
 	mixCrushed = (Latch.ar(mix, Impulse.ar(LFNoise2.kr(0.4).exprange(900, 5000)
 		* (1 + (3 * (1 - (dirtArc / dirtCap))))))
 		.round(2 ** (LFNoise2.kr(0.3).range(2.4, 4.2)

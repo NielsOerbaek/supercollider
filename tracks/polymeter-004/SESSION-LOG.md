@@ -322,3 +322,19 @@ everything else. Raised it about 12 dB, and the drum-hit noise by 4.*
 through the same bus chain: at 0.5 it sat 20 dB under the floor between clap
 hits — band-passed PinkNoise is far quieter than its nominal level. Set to 3.5,
 about 3 dB under that floor at the peak; drum-hit noise raised to match.*
+
+> Cool. The noise should not fade in at first, and currently it sees weirdly
+> panned? Actually remove the background noise and work with overdrive of
+> instruments instead. And that should really kick into great after the drums
+> drop out. The claps should be more distorted throughout.
+
+*The odd panning was the wash itself: two independent noises, each with its
+own wandering band-pass, so the image drifted between the ears. It is gone,
+and the main-bus saturation with it, so the distortion comes from the
+instruments rather than the bus. A new curve, separate from the dirt arc,
+stays at zero through the first half, climbs over the two bars after the
+drums drop out and holds to the end; on it the bass, both arps and the clap
+each get up to 2.5x or so their own drive, trimmed for level, with the arps'
+low-pass closing a little so they thicken rather than fizz. The clap's own
+drive goes from 1.8 to 4.5 for the whole track, with more again after the
+drop. The grit riding the drum hits stays — it is not background.*
