@@ -118,14 +118,17 @@
 	var dirtKnee = 0.45;
 	var dirtCap  = 0.8;
 	var drumDriveMax  = 3.5;     // tanh drive on the drum bus
-	var drumNoiseAmt  = 1.5;     // pink noise riding the drum hits
+	// PinkNoise band-passed is far quieter than its nominal level suggests —
+	// the noise amounts below are calibrated, not round numbers
+	var drumNoiseAmt  = 6;       // pink noise riding the drum hits
 	var drumCrushMax  = 0.18;    // the drum crusher — a trace, not a sound
 	// the main bus, the whole track: a parallel tanh saturation, a stereo
 	// pink-noise wash, and a faint trace of crushing
 	var mixSatMax     = 0.45;    // wet share of the main-bus saturation
-	// (0.12 measured as no change at all to the noise floor between hits —
-	// buried ~15 dB under everything else — so it is up where it registers)
-	var noiseBedAmp   = 0.5;     // the noise wash
+	// the noise wash: measured in isolation at 0.5 it sat 20 dB under the
+	// floor between hits in the drop. 3.5 puts it ~3 dB under that floor at
+	// the arc's peak — clearly there as air and hiss, not on top of anything
+	var noiseBedAmp   = 3.5;
 	var masterCrushMax = 0.1;
 	var revMix   = 0.2;          // the shared room, same as track 3
 

@@ -317,3 +317,8 @@ saturation to do the work.*
 drop), so the crushed squash was gone — but the noise wash measured as no
 change at all to the floor between clap hits, buried roughly 15 dB under
 everything else. Raised it about 12 dB, and the drum-hit noise by 4.*
+
+*Raising it 12 dB still moved nothing, so the wash was measured on its own
+through the same bus chain: at 0.5 it sat 20 dB under the floor between clap
+hits — band-passed PinkNoise is far quieter than its nominal level. Set to 3.5,
+about 3 dB under that floor at the peak; drum-hit noise raised to match.*
