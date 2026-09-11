@@ -119,9 +119,11 @@
 	var arpPanBars  = 2;
 	// the riser: pink noise through the eight drumless bars, fading in and
 	// opening up as it goes, cut dead when the kit comes back. The amp is
-	// calibrated — at full it measured -32.6 dB alone through the bus chain,
-	// so 2.0 peaks it ~7 dB under the drop's mix just before the cut.
-	var riserAmp     = 2.0;
+	// calibrated — at full it measured -32.6 dB alone through the bus chain.
+	// 2.0 (peaking ~7 dB under the drop's mix) barely moved the top end; 3.5
+	// peaks it ~2 dB under, so the build actually reads. The squared fade
+	// still keeps it well down for the first half of the eight bars.
+	var riserAmp     = 3.5;
 	var riserPanBars = 1;        // one full left-right-left per bar
 	// The dirt arc: a half-sine over the full length, starting near zero and
 	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It

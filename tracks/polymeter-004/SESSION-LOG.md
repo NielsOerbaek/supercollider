@@ -402,3 +402,7 @@ wash. It fades in across bars 20-28 on a square curve, creeping in and
 building late, while its low-pass opens from ~700 Hz to ~10 kHz, and it is
 cut dead on the kit's return. Its level was measured in isolation first and
 set to peak about 7 dB under the drop's mix.*
+
+*At that level it barely registered — +0.8 dB in the top end in its loudest
+bar, its sweep invisible under everything else. Raised ~5 dB to peak about
+2 dB under the mix just before the cut.*
