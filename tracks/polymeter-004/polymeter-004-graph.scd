@@ -74,12 +74,15 @@
 //           back out of the distance into clear view over these eight bars.
 //           A wide, enveloping pink noise fades in across them, opening up
 //           as it goes, and is cut dead by the kit's return
-//   bar 28  the kit returns alongside the clap, in the original two-step:
+//   bar 29  the kit returns alongside the clap, in the original two-step:
 //           kick 0 5 12 21 27 against the even-beat backbeat. The bass stays
-//           up front.
-//   bar 37  outro: all percussion stops and the bass stops being played —
-//           the arps run on over the comb delay feeding back on itself
-//   bar 39  the whole thing fades over the last two bars
+//           up front. Sixteen bars of this —
+//   bar 37  — and in the second eight the bass sustains longer and longer
+//           while its delay's feedback climbs toward self-sustaining, piling
+//           into a saturating wall
+//   bar 45  outro: all percussion stops and the bass stops being played —
+//           the arps run on over that wall of feedback as it rings down
+//   bar 47  the whole thing fades over the last two bars
 
 {
 	var q = 170/60;              // tempo: quarter = 170
@@ -90,9 +93,11 @@
 	var arpBar = 10;             // both arps, together — one entry, not two
 	var clapBar = 20;            // halfway: the kit drops out, the clap takes over
 	var kitReturnBar = 28;       // the kit comes back, now alongside the clap
-	var outroBar = 36;           // all percussion stops; arps + delay feedback
+	var massBar  = 36;           // halfway through the kit's return: the bass
+	                             // delay's feedback starts climbing
+	var outroBar = 44;           // all percussion stops; arps + delay feedback
 	                             // (2 bars), then 2 bars of fade to the end
-	var bars = 40;               // ~3:32
+	var bars = 48;               // ~4:14
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — the JI fundamental, as in tracks 1-3
@@ -123,7 +128,7 @@
 	// 2.0 (peaking ~7 dB under the drop's mix) barely moved the top end; 3.5
 	// peaks it ~2 dB under, so the build actually reads. The squared fade
 	// still keeps it well down for the first half of the eight bars.
-	var riserAmp     = 3.5;
+	var riserAmp     = 3.0;       // (3.5, then taken ~15% down at the peak)
 	// The dirt arc: a half-sine over the full length, starting near zero and
 	// peaking exactly at the midpoint — bar 20, where the kit cuts out. It
 	// drives the drum bus's overdrive and hit-noise, and traces of crushing.
@@ -267,7 +272,7 @@
 
 	var clk, bassTrig, bassVel, bassF, bass;
 	var bassRamp, bassDecay, bassDry, bassDel, bassRev, delayFade;
-	var bassRise, bassEmerge, bassLvl, rawArc, sec1, sec2, sec3;
+	var bassRise, bassEmerge, bassLvl, rawArc, sec1, sec2, sec3, massRamp;
 	var deepTrig, deepF, deep;
 	var drumGate, snareGate, kitGate, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
@@ -290,7 +295,12 @@
 	outroGate = elapsed < (outroBar * barDur);
 	outroDuck = Lag.kr(outroGate, 1.2);
 
-	rawArc      = ((elapsed / total).clip(0, 1) * pi).sin;
+	// the arc's peak is pinned to the drop, not to the midpoint of the whole
+	// length: it rises over bars 1-20 and falls over bar 20 to the end, so
+	// lengthening the back half stretches the fall without moving the peak
+	rawArc      = (((elapsed / (clapBar * barDur) * 0.5).min(0.5)
+		+ (((elapsed - (clapBar * barDur)) / (total - (clapBar * barDur))).clip(0, 1)
+			* 0.5)) * pi).sin;
 	// the dirt arc: 0 -> 1 -> 0 across the piece, peaking at the midpoint,
 	// soft-capped above the knee
 	dirtArc     = rawArc - ((rawArc - dirtKnee).max(0)
@@ -322,23 +332,30 @@
 	// eight clap-only bars — plucky, front, and with the delay back at its
 	// opening settings — and stays there through the two-step section.
 	// bassRamp is 0 at the front and ~0.47 at its furthest point.
-	bassRise   = ((elapsed - (2 * barDur)) / (total - (2 * barDur))).clip(0, 1)
-		.min((clapBar - 2) / (bars - 2));
+	// (pinned to the drop rather than the track length, so it recedes at the
+	// same rate whatever the length)
+	bassRise   = ((elapsed - (2 * barDur)) / ((clapBar - 2) * barDur)).clip(0, 1) * 0.47;
 	bassEmerge = ((elapsed - (clapBar * barDur))
 		/ ((kitReturnBar - clapBar) * barDur)).clip(0, 1);
 	bassRamp   = bassRise * (1 - bassEmerge);
 	// back in a much denser mix than the one it left, so it comes back
 	// lifted, or "clear view" would just mean level with the intro
 	bassLvl    = bassAmp * (1 + (0.5 * bassEmerge));
-	bassDecay = 2 + (7 * bassRamp);
+	// the mass ramp, bars 36-44: the second half of the kit's return. Over it
+	// the bass sustains longer and longer (Pluck decay up to +12 s, loop
+	// damping eased further, the sub's envelope stretched) and the delay's
+	// feedback climbs toward self-sustaining — see below. Nothing else is
+	// turned down to make room; it is meant to get bigger.
+	massRamp  = ((elapsed - (massBar * barDur)) / ((outroBar - massBar) * barDur)).clip(0, 1);
+	bassDecay = 2 + (7 * bassRamp) + (12 * massRamp);
 	bass = Pluck.ar(WhiteNoise.ar(0.8), bassTrig, 0.05, 1/bassF,
-		bassDecay, 0.4 - (0.12 * bassRamp));
+		bassDecay, 0.4 - (0.12 * bassRamp) - (0.15 * massRamp));
 	// its own drive follows the arc; odRamp stacks overdrive on top after the
 	// drop — the pick attack survives it, so it stays plucky and in view
 	bass = (bass * (2.2 - (1.35 * bassRamp)) * (1 + (bassOD * odRamp))).tanh
 	* (1 - (0.25 * odRamp)) * Lag.ar(bassVel, 0.002);
 	bass = bass + (SinOsc.ar(bassF, 0,
-		Decay2.ar(bassTrig, 0.004, 0.3 + (0.7 * bassRamp))) * bassVel * 0.6);
+		Decay2.ar(bassTrig, 0.004, 0.3 + (0.7 * bassRamp) + (1.0 * massRamp))) * bassVel * 0.6);
 	bass = LPF.ar(bass, 5000 - (3400 * bassRamp));
 	bassDry = bass * (1 - (0.62 * bassRamp));
 	// a 3-step delay — 3 eighths, exactly one drum group — with fairly high
@@ -352,15 +369,25 @@
 	// in the outro the feedback is pushed long (+8 s of decay) — with the
 	// bass back at its opening settings the comb would otherwise ring out in
 	// about four seconds, and the outro is meant to be that feedback
+	// over the mass ramp the decay climbs another 40 s — per repeat that is
+	// ~0.4 feedback rising to ~0.92, so each bar of the ramp the repeats pile
+	// up faster than they die and the delay swells into a wall. It carries
+	// straight on into the outro, where the input stops and that wall is
+	// what is left ringing under the arps.
 	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900) * 3, 0.6, 3 * s8,
-		4 + (7 * bassRamp) + (8 * (1 - outroDuck))), 500);
+		4 + (7 * bassRamp) + (40 * massRamp) + (8 * (1 - outroDuck))), 500);
 	// the delay is silent for the first bar, blooms in across bars 2-6, and is
 	// then on for the rest of the track — so the bass states the riff clean
 	// once before the repeats start filling in around it. It keeps growing
 	// with bassRamp after that, along with everything else.
 	delayFade = ((elapsed - barDur) / (4 * barDur)).clip(0, 1);
 	bassDel = BHiShelf.ar(bassDel, 2500, 1, 5)
-	* delayFade * (0.15 + (0.11 * bassRamp));
+	* delayFade * (0.15 + (0.11 * bassRamp) + (0.2 * massRamp));
+	// with that much feedback the wall would grow without limit, so it runs
+	// into a soft ceiling: unity for normal levels (the whole track before
+	// bar 36 is well under it), saturating as the build gets there — which
+	// is where "massive" turns into "intense"
+	bassDel = (bassDel / 0.6).tanh * 0.6;
 	// the wet sends rise, but by less than the dry falls — otherwise the bass
 	// changes character without ever actually receding, which is what a first
 	// pass at this did (net level moved 0.5 dB across the whole track).

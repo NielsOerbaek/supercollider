@@ -418,3 +418,26 @@ level — uncorrelated but identical in tone, so it reads as the room filling up
 rather than a source with a position. The earlier wash had failed the other
 way: each ear had its own wandering filter, and the tone shifting between ears
 read as oddly panned.*
+
+*Measured: the balance no longer swings at all (8.1 dB of swing became 0.2),
+and the top end's L/R correlation fell from 0.84 to 0.49.*
+
+> Make the last section before the outtro twice as long and in the second half
+> ramp of the feedback on the bass so it becomes more and more massive and
+> intense. Also increse sustain on the bass sound in that part, but without
+> scaling down anything else.
+
+> And make the peak of the noize 10-20% lower.
+
+*The kit's return now runs sixteen bars (29-44), the track 48 bars. Over the
+second eight, one ramp raises the bass's sustain (Pluck decay up to +12 s,
+loop damping eased, the sub's envelope stretched) and the delay's feedback —
+another 40 s of comb decay, ~0.4 per repeat climbing to ~0.92 — so repeats
+pile up faster than they die, with the send pushed up too. A soft ceiling on
+the delay output lets the wall saturate rather than grow without limit; below
+it the delay is at unity, so nothing before bar 37 changes. Nothing else is
+turned down. The wall carries on into the outro, where the input stops and it
+rings down under the arps. Two things were tied to the track length and had to
+be pinned to the drop instead: the dirt arc (whose peak would otherwise have
+slid from bar 20 to 24) and the bass's recession rate. The riser's peak is
+down 15%.*
