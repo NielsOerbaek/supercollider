@@ -4,6 +4,8 @@
 # Usage: ./make_mp3.sh [tracks/<name>]     (default: tracks/polymeter-001)
 #
 # A track directory needs:
+#   render.sh    — optional; if present and executable it is used instead of
+#                  render.scd, and must leave render.wav in the track directory
 #   render.scd   — offline renderer; must write render.wav next to itself
 #   track.conf   — optional mp3 metadata (title/artist/album/comment)
 # Output lands in <track>/renders/<name>_<timestamp>_<commit>.mp3
@@ -13,7 +15,15 @@ cd "$(dirname "$0")"
 track="${1:-tracks/polymeter-001}"
 track="${track%/}"
 name=$(basename "$track")
-[ -f "$track/render.scd" ] || { echo "error: no render.scd in $track" >&2; exit 1; }
+# a track renders either through its own render.sh (which must leave
+# render.wav in the track directory) or through render.scd
+if [ -x "$track/render.sh" ]; then
+	renderer="$track/render.sh"
+elif [ -f "$track/render.scd" ]; then
+	renderer=""
+else
+	echo "error: no render.sh or render.scd in $track" >&2; exit 1
+fi
 
 # metadata defaults; track.conf overrides any of them
 title="$name"
@@ -32,7 +42,11 @@ mkdir -p "$track/renders"
 out="$track/renders/${name}_${stamp}_${hash}.mp3"
 wav="$track/render.wav"
 
-QT_QPA_PLATFORM=offscreen sclang "$track/render.scd"
+if [ -n "$renderer" ]; then
+	"$renderer"
+else
+	QT_QPA_PLATFORM=offscreen sclang "$track/render.scd"
+fi
 
 # linear loudness normalization to -16 LUFS: measure integrated loudness,
 # then apply one flat gain (no dynamic processing), with a safety limiter
