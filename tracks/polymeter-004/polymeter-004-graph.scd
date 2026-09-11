@@ -42,8 +42,9 @@
 // The track's dirt is overdrive. The drum bus drives on an arc that peaks
 // at the drop; the instruments themselves — bass, arps, clap — sit fairly
 // clean through the first half and kick hard into overdrive once the drums
-// drop out, staying there to the end. Bitcrushing is only a trace, and the
-// only noise is pink noise riding the drum hits.
+// drop out, staying there to the end. The kit also carries a steady 40%
+// bitcrush — its grain is part of the drums' own signal, not a layer on top;
+// everywhere else crushing is only a trace.
 //
 // Under all of it, polymeter-003's voice 1 — the deep drone-bass pluck —
 // marks just two points in the bar: beat 1 and the and of beat 7 (grid steps
@@ -125,10 +126,10 @@
 	var dirtKnee = 0.45;
 	var dirtCap  = 0.8;
 	var drumDriveMax  = 3.5;     // tanh drive on the drum bus
-	// PinkNoise band-passed is far quieter than its nominal level suggests —
-	// the noise amounts below are calibrated, not round numbers
-	var drumNoiseAmt  = 6;       // pink noise riding the drum hits
-	var drumCrushMax  = 0.18;    // the drum crusher — a trace, not a sound
+	// the drum crusher: a fixed wet share, not on the arc. Its settings are
+	// frozen at the character it had when the two-step drums arrived in
+	// bar 7, back when it did follow the arc — the point that was liked.
+	var drumCrush     = 0.4;
 	// a faint trace of crushing on the main bus, the whole track
 	var masterCrushMax = 0.1;
 	// Instrument overdrive — a separate curve from the dirt arc. odRamp is 0
@@ -260,7 +261,7 @@
 	var drumGate, snareGate, kitGate, kickTrig, snareTrig, hatTrig, kick, snare, hat;
 	var clapTrig, clapEnv, clap, kickDrive, kickSub;
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
-	var dirtArc, drumCrush, drumDrive, drumNoise, masterCrush, mixCrushed, odRamp;
+	var dirtArc, drumDrive, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
 	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpLift, arpPan;
 	var mix, master;
@@ -286,7 +287,6 @@
 	// the instruments' overdrive: nothing extra until the drums drop out,
 	// then all the way in over two bars, and it stays
 	odRamp      = ((elapsed - (clapBar * barDur)) / (2 * barDur)).clip(0, 1);
-	drumCrush   = 0.03 + ((drumCrushMax - 0.03) * dirtArc);
 	masterCrush = dirtArc * masterCrushMax;
 
 	// ---- bass: polymeter-003's voice 2, an octave down ----
@@ -430,19 +430,13 @@
 	// drive that goes from barely-there at bar 7 to properly overdriven at the
 	// peak and back...
 	drums = (drums * drumDrive).tanh * 1.1;
-	// ...then noise riding the hits: full-band pink noise, gated by the kit's
-	// own envelope, so every hit trails grit that thickens as the arc rises.
-	// Only a high-pass at 150 Hz keeps it off the kick's sub; it was once
-	// band-passed around 2.8 kHz, which made it a hiss rather than pink. The
-	// full band at unit level carries about the same energy as that slice did
-	// at double level, so drumNoiseAmt did not need to change...
-	drumNoise = HPF.ar(PinkNoise.ar, 150)
-	* Amplitude.ar(drums, 0.002, 0.09) * drumNoiseAmt * dirtArc;
-	// ...and only a trace of the old polymeter-002 crusher, with a faster
-	// latch and finer bits than it used to have
-	drumsCrushed = Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(2500, 9000)))
-		.round(2 ** LFNoise2.kr(0.4).range(4.5, 6.5).neg * 2);
-	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush) + drumNoise;
+	// ...then the polymeter-002 crusher in parallel, 40% wet: latched at a
+	// wandering ~1.9-10 kHz, quantized to ~3-5 bits and driven, so the kit's
+	// grain comes from inside its own signal. (A separate pink-noise layer
+	// riding the hits sat apart from the kit; this is the sound it replaced.)
+	drumsCrushed = (Latch.ar(drums, Impulse.ar(LFNoise2.kr(0.5).exprange(1900, 10200)))
+		.round(2 ** LFNoise2.kr(0.4).range(3.2, 4.8).neg * 2) * 3.5).tanh * 1.1;
+	drums = (drums * (1 - drumCrush)) + (drumsCrushed * drumCrush);
 
 	// ---- the clap: polymeter-001's multi-burst clap ----
 	// Three delayed noise bursts smeared 11 and 23 ms behind the first — the

@@ -371,3 +371,12 @@ higher. Same voice, same amp, so the two are level.*
 
 *Beats 1 5 6 10 12 15: the third cell's opening clap lands a beat late, so the
 bar leans into its last cell rather than framing it like the first two.*
+
+> Noise on the drum kit should be the ~40% crush effect we had before. The
+> noise sounds too seperated from the kit
+
+*The pink-noise layer is gone and the polymeter-002 crusher is back on the
+drum bus at a fixed 40% wet, its settings frozen at the character it had when
+the two-step drums arrived in bar 7 (latch ~1.9-10 kHz, ~3-5 bits, drive 3.5).
+The noise layer was a separate sound laid over the hits; the crusher's grain
+is made from the kit's own signal, which is why it sits inside it.*
