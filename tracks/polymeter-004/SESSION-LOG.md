@@ -449,3 +449,28 @@ was fed only the bass's top end at a small send, so it grew to the level of
 the hats and arps and no further. Pushed: feedback to ~0.95, the send ramp
 more than four times larger, a higher ceiling, and the delay's filters opening
 downward so the wall gains body.*
+
+*Pushed: the build now rises 2.8 dB across its eight bars with the crest
+falling, and the outro holds the wall at nearly the full mix's level. The flat
+loudness normalization answered the louder ending by setting everything before
+it ~2.3 dB lower in the file than two renders earlier — balance unchanged, only
+the file level.*
+
+> push
+
+*Pushed 024f5e6..d427e03.*
+
+> Great! The feedback should be a tiny bit less, especially in the outro, so it
+> dies out (at least partially) before the fade. The arps should fade out in
+> the last to bars before the drums reenter. The overdrive on the drums should
+> increase a little after the feedback does, so it can battle the wall of
+> delays. Heavy hard limiting is expected.
+
+*Mass feedback trimmed (58 s of extra decay instead of 70, send ramp 0.8
+instead of 0.9). In the outro the mass term is ducked away, leaving ~24 s of
+decay, so the wall rings down ~26 dB across the two outro bars before the fade.
+The arps fade out over bars 27-28, leaving the riser to carry the approach
+alone, and return with the kit at bar 29 — they are still needed for the
+outro. A second drum-drive ramp starts two bars after the feedback's and adds
++2.5 of drive by bar 44, so the kit claws back through the wall; the limiting
+that follows is left to happen.*

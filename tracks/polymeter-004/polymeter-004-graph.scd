@@ -73,15 +73,17 @@
 //           switch to a second, more active form, and the plucky bass walks
 //           back out of the distance into clear view over these eight bars.
 //           A wide, enveloping pink noise fades in across them, opening up
-//           as it goes, and is cut dead by the kit's return
+//           as it goes, and is cut dead by the kit's return. The arps fade
+//           out across the last two of these bars and return with the kit
 //   bar 29  the kit returns alongside the clap, in the original two-step:
 //           kick 0 5 12 21 27 against the even-beat backbeat. The bass stays
 //           up front. Sixteen bars of this —
 //   bar 37  — and in the second eight the bass sustains longer and longer
 //           while its delay's feedback climbs toward self-sustaining, piling
-//           into a saturating wall
+//           into a saturating wall; two bars behind it the drums overdrive
+//           harder to fight their way through
 //   bar 45  outro: all percussion stops and the bass stops being played —
-//           the arps run on over that wall of feedback as it rings down
+//           the arps run on while the wall of feedback rings down
 //   bar 47  the whole thing fades over the last two bars
 
 {
@@ -140,6 +142,10 @@
 	var dirtKnee = 0.45;
 	var dirtCap  = 0.8;
 	var drumDriveMax  = 3.5;     // tanh drive on the drum bus
+	// extra drum drive over the feedback build, starting two bars behind it,
+	// so the kit fights its way through the wall. The master limiter is
+	// expected to work hard here.
+	var drumMassDrive = 2.5;
 	// the drum crusher: a fixed wet share, not on the arc. Its settings are
 	// frozen at the character it had when the two-step drums arrived in
 	// bar 7, back when it did follow the arc — the point that was liked.
@@ -279,7 +285,7 @@
 	var burstGate, burstTrig, snare2, drums, drumsCrushed, clk16, hat16Trig, hat16;
 	var dirtArc, drumDrive, masterCrush, mixCrushed, odRamp;
 	var outroGate, outroDuck;
-	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpPan;
+	var arp6Trig, arp6F, arp6, arp8Trig, arp8F, arp8, arpAlt, arpEvo, arpPan, arpDip;
 	var riserFade, riser;
 	var mix, master;
 
@@ -305,7 +311,9 @@
 	// soft-capped above the knee
 	dirtArc     = rawArc - ((rawArc - dirtKnee).max(0)
 		* (1 - ((dirtCap - dirtKnee) / (1 - dirtKnee))));
-	drumDrive   = 1.3 + ((drumDriveMax - 1.3) * dirtArc);
+	drumDrive   = 1.3 + ((drumDriveMax - 1.3) * dirtArc)
+	+ (drumMassDrive * ((elapsed - ((massBar + 2) * barDur))
+		/ ((outroBar - massBar - 2) * barDur)).clip(0, 1));
 	// the instruments' overdrive: nothing extra until the drums drop out,
 	// then all the way in over two bars, and it stays
 	odRamp      = ((elapsed - (clapBar * barDur)) / (2 * barDur)).clip(0, 1);
@@ -366,19 +374,17 @@
 	// bass — the pick attack and string noise, not the body — so the repeats
 	// ring bright and airy above the part rather than clouding the low end,
 	// with a shelf lift on top. The x3 makes up what the high-pass removes.
-	// in the outro the feedback is pushed long (+8 s of decay) — with the
-	// bass back at its opening settings the comb would otherwise ring out in
-	// about four seconds, and the outro is meant to be that feedback
-	// over the mass ramp the decay climbs another 70 s — per repeat that is
-	// ~0.4 feedback rising to ~0.95, so each bar of the ramp the repeats pile
+	// over the mass ramp the decay climbs another 58 s — per repeat that is
+	// ~0.4 feedback rising to ~0.94, so each bar of the ramp the repeats pile
 	// up faster than they die and the delay swells into a wall. Its filters
 	// also open downward (input high-pass 900 -> 350 Hz, output 500 -> 180 Hz)
-	// so the wall gains body instead of staying a bright shimmer. A first
-	// pass with 40 s, the bright filters and a small send rose only 0.8 dB
-	// across the eight bars. It carries straight on into the outro, where the
-	// input stops and that wall is what is left ringing under the arps.
+	// so the wall gains body instead of staying a bright shimmer.
+	// In the outro the input stops and the mass term is ducked away, leaving
+	// ~24 s of decay: the wall rings down ~26 dB over the two outro bars, so
+	// it is audibly dying under the arps before the master fade takes it.
 	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900 - (550 * massRamp)) * 3,
-		0.6, 3 * s8, 4 + (7 * bassRamp) + (70 * massRamp) + (8 * (1 - outroDuck))),
+		0.6, 3 * s8, 4 + (7 * bassRamp) + (58 * massRamp * outroDuck)
+			+ (20 * (1 - outroDuck))),
 		500 - (320 * massRamp));
 	// the delay is silent for the first bar, blooms in across bars 2-6, and is
 	// then on for the rest of the track — so the bass states the riff clean
@@ -386,7 +392,7 @@
 	// with bassRamp after that, along with everything else.
 	delayFade = ((elapsed - barDur) / (4 * barDur)).clip(0, 1);
 	bassDel = BHiShelf.ar(bassDel, 2500, 1, 5)
-	* delayFade * (0.15 + (0.11 * bassRamp) + (0.9 * massRamp));
+	* delayFade * (0.15 + (0.11 * bassRamp) + (0.8 * massRamp));
 	// with that much feedback the wall would grow without limit, so it runs
 	// into a soft ceiling: unity for normal levels (the whole track before
 	// bar 36 is well under it), saturating as the build gets there — which
@@ -559,6 +565,11 @@
 	// zero, so both arrive in the centre and fan out — the lower bell
 	// drifting left, the higher one right — before crossing back over
 	arpPan = SinOsc.kr(1 / (arpPanBars * barDur)) * arpPanWidth;
+	// the arps fade out across the last two drumless bars, leaving the riser
+	// to carry the approach alone, and come straight back with the kit
+	// (a 20 ms lag so the return doesn't click on a ringing note)
+	arpDip = Lag.kr(1 - (((elapsed - ((kitReturnBar - 2) * barDur)) / (2 * barDur))
+		.clip(0, 1) * (elapsed < ((kitReturnBar * barDur) - 0.01))), 0.02);
 
 	// ---- the riser: pink noise across the drumless bars, all around ----
 	// Two independent pink noises, one per ear, through the SAME filter at the
@@ -585,7 +596,7 @@
 	mix = Pan2.ar(bassDry * bassLvl, -0.08) + Pan2.ar(bassDel * bassLvl, 0.22)
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
-	+ Pan2.ar(arp6, arpPan.neg, arp6Amp) + Pan2.ar(arp8, arpPan, arp8Amp)
+	+ Pan2.ar(arp6, arpPan.neg, arp6Amp * arpDip) + Pan2.ar(arp8, arpPan, arp8Amp * arpDip)
 	+ riser;
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
