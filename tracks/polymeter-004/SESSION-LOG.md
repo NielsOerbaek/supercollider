@@ -406,3 +406,15 @@ set to peak about 7 dB under the drop's mix.*
 *At that level it barely registered — +0.8 dB in the top end in its loudest
 bar, its sweep invisible under everything else. Raised ~5 dB to peak about
 2 dB under the mix just before the cut.*
+
+*Measured: +2.2 dB in the top end in the last drumless bar, its sweep now
+visible at about ±2.5 dB, back to baseline the instant the kit returns.*
+
+> Very cool! The noise should not pan around though. It should feel
+> all-encompassing not like a thing that is moving around me.
+
+*Two independent pink noises, one per ear, through the same filter at the same
+level — uncorrelated but identical in tone, so it reads as the room filling up
+rather than a source with a position. The earlier wash had failed the other
+way: each ear had its own wandering filter, and the tone shifting between ears
+read as oddly panned.*
