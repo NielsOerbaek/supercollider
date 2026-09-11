@@ -11,7 +11,8 @@ its output by a fixed 960 samples (20 ms, measured). The same delay in every
 stem keeps the parts locked to each other, but puts the whole mix 20 ms
 behind the grid; timeline.json's latencySamples trims it from each stem.
 
-Usage: python3 assemble.py [timeline.json] [stems/] [render.wav]
+Usage: python3 assemble.py [timeline.json] [stems/] [render.wav | -]
+  "-" writes the WAV to stdout (to pipe into ffmpeg) and the summary to stderr
 """
 import json
 import sys
@@ -60,10 +61,12 @@ def main(argv):
     out_path = Path(argv[3] if len(argv) > 3 else "render.wav")
     timeline = json.loads(tl_path.read_text())
     mix = assemble(timeline, stem_dir)
-    write_wav_float(out_path, mix, timeline["sampleRate"])
+    to_stdout = str(out_path) == "-"
+    write_wav_float(sys.stdout.buffer if to_stdout else out_path, mix, timeline["sampleRate"])
     secs = len(mix) / timeline["sampleRate"]
     print(f"assembled {len(timeline['parts'])} stems -> {out_path} "
-          f"({int(secs // 60)}:{secs % 60:04.1f}, peak {np.abs(mix).max():.3f})")
+          f"({int(secs // 60)}:{secs % 60:04.1f}, peak {np.abs(mix).max():.3f})",
+          file=sys.stderr if to_stdout else sys.stdout)
 
 
 if __name__ == "__main__":

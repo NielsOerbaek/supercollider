@@ -52,14 +52,15 @@ for pid in "${pids[@]}"; do wait "$pid" || fail=1; done
 [ "$fail" = 0 ] || { echo "error: stem render failed" >&2; exit 1; }
 [ "${#want[@]}" -gt 0 ] && exit 0
 
-python3 assemble.py timeline.json stems render.wav
+# the assembled mix streams straight into the compressor, so a render never
+# holds two 700 MB float WAVs on disk at once.
 # a moderate compressor on the whole mix: 3:1 above about -20 dBFS, 15 ms
 # attack, 250 ms release, soft knee, RMS-detected with the channels linked so
 # the stereo image doesn't shift. It runs before make_mp3.sh's loudness
 # normalization and limiter, which set the final level.
-ffmpeg -hide_banner -loglevel error -y -i render.wav \
-	-af "acompressor=threshold=0.1:ratio=3:attack=15:release=250:knee=4:detection=rms:link=average" \
-	-c:a pcm_f32le render.comp.wav
-mv render.comp.wav render.wav
+python3 assemble.py timeline.json stems - \
+	| ffmpeg -hide_banner -loglevel error -y -f wav -i - \
+		-af "acompressor=threshold=0.1:ratio=3:attack=15:release=250:knee=4:detection=rms:link=average" \
+		-c:a pcm_f32le render.wav
 python3 stem_loudness.py timeline.json stems || echo "warning: a stem is off its loudness target" >&2
 python3 check_lock.py timeline.json stems

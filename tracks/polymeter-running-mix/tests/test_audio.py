@@ -47,3 +47,15 @@ def test_band_rms_of_a_sine():
     x = np.sin(2 * np.pi * 1000 * t)
     assert abs(audio.band_rms_db(x, sr, 500, 2000) - (-3.01)) < 0.05
     assert audio.band_rms_db(x, sr, 3000, 6000) < -60
+
+
+def test_float_wav_to_a_stream(tmp_path):
+    import io
+    x = np.ones((10, 2), np.float32) * 0.25
+    buf = io.BytesIO()
+    audio.write_wav_float(buf, x, 48000)
+    assert not buf.closed
+    p = tmp_path / "s.wav"
+    p.write_bytes(buf.getvalue())
+    y, sr = audio.read_wav(p)
+    assert np.array_equal(x, y)

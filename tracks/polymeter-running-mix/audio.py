@@ -54,15 +54,20 @@ def read_wav(path):
 
 
 def write_wav_float(path, data, sr):
-    """Write frames x channels float data as a 32-bit float WAV."""
+    """Write frames x channels float data as a 32-bit float WAV, to a path or
+    to an open binary stream (e.g. sys.stdout.buffer, to pipe into ffmpeg)."""
     data = np.ascontiguousarray(data, dtype="<f4")
     frames, ch = data.shape
-    payload = data.tobytes()
     fmt = struct.pack("<HHIIHH", 3, ch, sr, sr * ch * 4, ch * 4, 32)
-    with open(path, "wb") as f:
-        f.write(b"RIFF" + struct.pack("<I", 4 + 8 + len(fmt) + 8 + len(payload)) + b"WAVE")
+    f = path if hasattr(path, "write") else open(path, "wb")
+    try:
+        f.write(b"RIFF" + struct.pack("<I", 4 + 8 + len(fmt) + 8 + data.nbytes) + b"WAVE")
         f.write(b"fmt " + struct.pack("<I", len(fmt)) + fmt)
-        f.write(b"data" + struct.pack("<I", len(payload)) + payload)
+        f.write(b"data" + struct.pack("<I", data.nbytes))
+        f.write(memoryview(data).cast("B"))
+    finally:
+        if f is not path:
+            f.close()
 
 
 def band_rms_db(mono, sr, lo=0.0, hi=None):
