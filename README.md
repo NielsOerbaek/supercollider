@@ -91,6 +91,11 @@ LFO paths differ between code versions even with the same seed.
   top in 6 and 8 steps — the 6 locking to the drum groups, the 8 rotating
   against the bar and coming round every fourth. All of it E minor
   pentatonic in just intonation, resolving nowhere.
+- **polymeter-005** — 9/8 at 170: a harpsichord waltz in E minor pentatonic
+  — polymeter-003's Karplus pluck taken high and doubled an octave up, 8' and
+  4' courses with a jack's tick — counting the bar in threes against
+  polymeter-004's 6-step bell arp. Nine against six realigns every two bars,
+  and it opens on the bell alone so it can follow 004's outro straight on.
 - **polymeter-running-mix** — 30 minutes at 170 for running: 003's first
   section slowed into a warm-up, 001 run for three cycles, 003's second
   section as an interlude with a long phasing hold, 002 stretched with a
