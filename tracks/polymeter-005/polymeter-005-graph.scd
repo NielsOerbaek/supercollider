@@ -19,14 +19,14 @@
 // The harpsichord is the Karplus pluck of polymeter-003's voice 2 (the one
 // that became 004's bass), taken high and doubled an octave up — the 8' and 4'
 // courses of a harpsichord — with a short, bright decay and a noise tick for
-// the jack. Everything else is the same family: a low pluck on the bar's three
-// heads, and a 3-step delay on the harpsichord, as in 004.
+// the jack. Everything else is the same family: a low pluck on its own
+// six-step cycle, and a 3-step delay on the harpsichord, as in 004.
 //
 // The build (bars of 9/8):
 //   bar 1    the bell arp alone, carrying over from 004's outro
 //   bar 9    the harpsichord figure enters
 //   bar 17   its 3-step delay opens up
-//   bar 25   the low pluck marks the three group heads
+//   bar 25   the low pluck enters on its own 6-step cycle, under the waltz
 //   bar 49   a second harpsichord voice a fifth above, on its own 9-step mask
 //   bar 97   breakdown: the harpsichord alone, deeper in the delay
 //   bar 109  everything back
@@ -60,10 +60,12 @@
 	var harp2Mask  = [0, 0.7, 0, 0.6, 0, 0.55, 0, 0.5, 0.45];
 	var harp2Pitch = [12, 9, 32/3, 12, 8, 9, 32/3, 12, 9];
 	//                B5  G5 A5     B5  E5 G5 A5    B5  G5
-	// the low pluck: the three heads of the bar, an octave below the harp's
-	// root, walking E - G - D across the pentatonic
-	var lowMask  = [1.0, 0, 0, 0.75, 0, 0, 0.8, 0, 0];
-	var lowPitch = [1/2, 3/5, 8/9];
+	// the low pluck runs six steps, not the bar's nine, so it rotates against
+	// the waltz and comes back round with it every two bars — the same
+	// relationship the bell has. Three hits per cycle and six notes, so the
+	// line itself takes four bars to repeat: E1 G1 D2 B1 G1 A1.
+	var lowMask  = [1.0, 0, 0.7, 0, 0.8, 0];
+	var lowPitch = [1/2, 3/5, 8/9, 3/4, 3/5, 2/3];
 	// polymeter-004's outro arp, note for note: six steps, so it rotates
 	var bellMask  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
 	var bellPitch = [4, 2, 32/9, 12/5, 3, 8/3];   // E4 E3 D4 G3 B3 A3
@@ -100,7 +102,7 @@
 	harp2 = harp2 + (HPF.ar(WhiteNoise.ar(Decay2.ar(harp2Trig, 0.0005, 0.006)), 5000) * 0.4);
 	harp2 = (harp2 * 1.4).tanh * Lag.ar(harp2Vel, 0.002);
 
-	// ---- the low pluck: the bar's three heads ----
+	// ---- the low pluck: six steps against the bar's nine ----
 	lowTrig = clk * (elapsed >= ((24 * barDur) - 0.01)) * breakGate
 	* Demand.ar(clk, 0, Dseq(lowMask, inf));
 	lowVel = Latch.ar(lowTrig, lowTrig);

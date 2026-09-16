@@ -26,3 +26,11 @@ a fifth above enters at bar 49 on its own sparser 9-step mask, and the whole
 figure runs into a 3-step delay — one of the waltz's groups — so it answers
 itself across the bar, as 004's bass does. All pitch is E minor pentatonic in
 just intonation on E.*
+
+> Great, for 005 the low pluck should have a longer pattern that runs 6 or 9
+> steps
+
+*It ran nine steps — the bar's three heads, the same three notes every bar. Now
+it runs six, so it rotates against the waltz and comes round with it every two
+bars, in step with the bell; three hits per cycle over six notes (E1 G1 D2 B1
+G1 A1), so the line itself takes four bars to repeat.*
