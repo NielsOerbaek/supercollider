@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polymeter — latest renders</title>
+<style>
+  :root { color-scheme: dark; --bg:#12100f; --fg:#ece6df; --dim:#8d857c; --line:#2b2724; --accent:#d8a657; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); padding-block:3rem;
+         padding-inline:max(1rem, calc(50vw - 24rem));
+         font:16px/1.6 "Iosevka", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  h1 { font-size:1.5rem; letter-spacing:.06em; margin:0 0 .25rem; }
+  .lede { color:var(--dim); margin:0 0 2.5rem; max-width:34rem; }
+  .track { border-top:1px solid var(--line); padding:1.5rem 0; }
+  .track h2 { font-size:1.05rem; margin:0; font-weight:600; }
+  .meta { color:var(--dim); font-size:.8rem; margin:.15rem 0 0; }
+  .desc { color:var(--fg); opacity:.85; margin:.75rem 0 1rem; max-width:38rem; }
+  audio { width:100%; height:2.5rem; }
+  footer { border-top:1px solid var(--line); margin-top:2rem; padding-top:1rem;
+            color:var(--dim); font-size:.8rem; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+  <h1>Polymeter</h1>
+  <p class="lede">Latest render of each track. Everything runs at quarter = 170 in just
+  intonation on E, written in SuperCollider.</p>
+    <article class="track">
+      <header>
+        <h2>Polymeter Study No. 1</h2>
+        <p class="meta">3:34 &middot; 5 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">5/4 + 7/4 + 9/8 + 4/4, just intonation on E</p>
+      <audio controls preload="none" src="tracks/polymeter-001.mp3"></audio>
+    </article>
+    <article class="track">
+      <header>
+        <h2>Polymeter Study No. 2</h2>
+        <p class="meta">3:18 &middot; 5 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">12/8 glitch groove, blips in 5/8, moving delays — just intonation on E</p>
+      <audio controls preload="none" src="tracks/polymeter-002.mp3"></audio>
+    </article>
+    <article class="track">
+      <header>
+        <h2>Polymeter Study No. 3</h2>
+        <p class="meta">4:57 &middot; 7 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">rhythmicon: nine plucks, voice n playing n hits per bar on the first n harmonics of E</p>
+      <audio controls preload="none" src="tracks/polymeter-003.mp3"></audio>
+    </article>
+    <article class="track">
+      <header>
+        <h2>Polymeter Study No. 4</h2>
+        <p class="meta">5:32 &middot; 7 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">15/4 at 170: bass hears 5+5+5 over a diminished E-G-Bb, drums hear 3+3+3+3+3</p>
+      <audio controls preload="none" src="tracks/polymeter-004.mp3"></audio>
+    </article>
+    <article class="track">
+      <header>
+        <h2>Polymeter Study No. 5</h2>
+        <p class="meta">3:52 &middot; 5 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">9/8 at 170: a harpsichord waltz in E minor pentatonic against 004's 6-step bell arp, locking every two bars</p>
+      <audio controls preload="none" src="tracks/polymeter-005.mp3"></audio>
+    </article>
+    <article class="track">
+      <header>
+        <h2>Polymeter Running Mix</h2>
+        <p class="meta">30:00 &middot; 46 MB &middot; 63a50c2 16 Sep 2026</p>
+      </header>
+      <p class="desc">30 minutes at 170: polymeter-003, 001, 003 again, 002 and 004 on one locked grid</p>
+      <audio controls preload="none" src="tracks/polymeter-running-mix.mp3"></audio>
+    </article>
+  <footer>Rendered offline from the track graphs; each entry names the commit it came from.</footer>
+</body>
+</html>
