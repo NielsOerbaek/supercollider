@@ -27,6 +27,8 @@
 //   bar 9    the harpsichord figure enters
 //   bar 17   its 3-step delay opens up
 //   bar 25   the low pluck enters on its own 6-step cycle, under the waltz
+//   bar 33   the 170 pulse: a tick on every quarter and a clap on every
+//            second one, both walking against the 9/8 bar
 //   bar 49   a second harpsichord voice a fifth above, on its own 9-step mask
 //   bar 97   breakdown: the harpsichord alone, deeper in the delay
 //   bar 109  everything back
@@ -45,6 +47,8 @@
 	var harpAmp  = 0.5;
 	var harp2Amp = 0.32;         // the second voice, a fifth above
 	var bellAmp  = 0.3;
+	var tickAmp  = 0.6;          // the 170 pulse: a tick on every quarter
+	var clapAmp  = 0.85;         // and a clap on every other one
 	var lowAmp   = 0.5;
 	var delAmp   = 0.3;          // the harpsichord's 3-step delay
 	var revMix   = 0.22;
@@ -70,6 +74,7 @@
 	var bellMask  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
 	var bellPitch = [4, 2, 32/9, 12/5, 3, 8/3];   // E4 E3 D4 G3 B3 A3
 
+	var pulseGate, tickTrig, tick, clapTrig, clapEnv, clap;
 	var clk, harpTrig, harpVel, harpF, harp, harp2Trig, harp2Vel, harp2F, harp2;
 	var lowTrig, lowVel, lowF, low, bellTrig, bellF, bell;
 	var breakGate, harpDel, delFade, mix, master;
@@ -80,6 +85,26 @@
 
 	// the breakdown, bars 97-109: everything but the harpsichord steps out
 	breakGate = (elapsed < (96 * barDur)) + (elapsed >= (108 * barDur));
+
+	// ---- the 170 pulse, from bar 33 ----
+	// Both run off the quarter-note clock itself, not off the bar: nine
+	// eighths make four and a half quarters, so the pulse lands on the
+	// downbeat only every other bar and walks against the waltz in between,
+	// re-locking every two bars like everything else here. The tick is
+	// polymeter-003's voice 9, the featherweight one; the clap is
+	// polymeter-001's, on every second quarter — a half-time backbeat at 85
+	// under the waltz. Both sit out the breakdown and the close.
+	pulseGate = (elapsed >= ((32 * barDur) - 0.01)) * breakGate
+	* (elapsed < (132 * barDur));
+	tickTrig = Impulse.ar(q) * pulseGate;
+	tick = (SinOsc.ar(fund * 8, 0, Decay2.ar(tickTrig, 0.001, 0.1))
+		+ (HPF.ar(WhiteNoise.ar(Decay2.ar(tickTrig, 0.001, 0.015)), 3000) * 0.4)) * 0.6;
+	// phase 0.5 puts it on the off quarter, between the ticks
+	clapTrig = Impulse.ar(q / 2, 0.5) * pulseGate;
+	clapEnv = Decay2.ar(clapTrig, 0.001, 0.2)
+	+ Decay2.ar(DelayN.ar(clapTrig, 0.03, 0.011), 0.001, 0.1)
+	+ Decay2.ar(DelayN.ar(clapTrig, 0.03, 0.023), 0.001, 0.08);
+	clap = BPF.ar(WhiteNoise.ar(2), 1800, 0.7) * clapEnv;
 
 	// ---- the harpsichord: two plucked courses an octave apart ----
 	// Pluck with a low coef rings bright and long-ish; the pair at f and 2f is
@@ -130,7 +155,8 @@
 
 	mix = Pan2.ar(harp, -0.12, harpAmp) + Pan2.ar(harp2, 0.3, harp2Amp)
 	+ Pan2.ar(harpDel, 0.25) + Pan2.ar(low, 0, lowAmp)
-	+ Pan2.ar(bell, SinOsc.kr(1 / (4 * barDur)) * 0.5, bellAmp);
+	+ Pan2.ar(bell, SinOsc.kr(1 / (4 * barDur)) * 0.5, bellAmp)
+	+ Pan2.ar(tick, -0.4, tickAmp) + Pan2.ar(clap, 0.1, clapAmp);
 	mix = FreeVerb.ar(mix, revMix, 0.8, 0.4);
 	// gentle glue; loudness normalization lives in make_mp3.sh
 	mix = Compander.ar(mix, mix, 0.4, 1, 0.7, 0.005, 0.15) * 1.1;

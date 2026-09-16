@@ -52,3 +52,17 @@ at 121. 160 bars now, ~4:14.*
 
 *Reverted: back to one continuous piece, the low pluck on its six-step cycle
 with the six-note line.*
+
+> And lets think about ways to accentuate the 170 feel after 8 bars of the
+> bass.
+
+> Chose: a quarter-note tick and a clap backbeat on alternate quarters.
+
+*Both run off the quarter clock rather than the bar, so they hold the 170
+pulse continuously: nine eighths is four and a half quarters, so the pulse
+lands on the downbeat only every other bar and walks against the waltz in
+between, re-locking every two bars like everything else here. The tick is
+polymeter-003's voice 9, the clap polymeter-001's, on every second quarter —
+a half-time backbeat at 85. Both enter at bar 33, sit out the breakdown and
+stop for the close. At their first levels they lifted the section by only
+0.3 dB, so both went up (tick 0.35 -> 0.6, clap 0.5 -> 0.85).*
