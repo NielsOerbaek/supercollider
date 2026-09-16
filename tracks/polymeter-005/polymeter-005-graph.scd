@@ -26,21 +26,17 @@
 //   bar 1    the bell arp alone, carrying over from 004's outro
 //   bar 9    the harpsichord figure enters
 //   bar 17   its 3-step delay opens up
-//   bar 25   the low pluck, on the bar's three heads over a six-note line
+//   bar 25   the low pluck enters on its own 6-step cycle, under the waltz
 //   bar 49   a second harpsichord voice a fifth above, on its own 9-step mask
-//   bar 89   everything drops out; only the delay rings on through the gap
-//   bar 97   the second section: the low pluck alone, now on a faster six-step
-//            cycle that rotates against the waltz instead of sitting on it
-//   bar 105  the harpsichord comes back over it
-//   bar 113  the bell arp returns
-//   bar 121  the second voice returns
-//   bar 155  the close, fading over the last 6 bars
+//   bar 97   breakdown: the harpsichord alone, deeper in the delay
+//   bar 109  everything back
+//   bar 133  the close: the bell arp alone again, fading over the last 6 bars
 
 {
 	var q = 170/60;              // tempo: quarter = 170
 	var e8 = 1 / (q * 2);        // eighth-note duration — the grid step
 	var barDur = 9 * e8;         // one 9/8 bar (~1.59 s)
-	var bars = 160;
+	var bars = 144;
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — every pitch below is fund * a JI ratio
@@ -64,14 +60,11 @@
 	var harp2Mask  = [0, 0.7, 0, 0.6, 0, 0.55, 0, 0.5, 0.45];
 	var harp2Pitch = [12, 9, 32/3, 12, 8, 9, 32/3, 12, 9];
 	//                B5  G5 A5     B5  E5 G5 A5    B5  G5
-	// the low pluck has two patterns and six notes either way — E1 G1 D2 B1
-	// G1 A1, twice the length of the three-note line it started with.
-	// Section 1 sits on the bar's three heads, so the line takes two bars.
-	// Section 2 runs a faster six-step cycle that rotates against the waltz
-	// and comes back round with it every two bars, the way the bell does;
-	// three hits a cycle over six notes puts its line on four bars.
-	var lowMaskA = [1.0, 0, 0, 0.75, 0, 0, 0.8, 0, 0];
-	var lowMaskB = [1.0, 0, 0.7, 0, 0.8, 0];
+	// the low pluck runs six steps, not the bar's nine, so it rotates against
+	// the waltz and comes back round with it every two bars — the same
+	// relationship the bell has. Three hits per cycle and six notes, so the
+	// line itself takes four bars to repeat: E1 G1 D2 B1 G1 A1.
+	var lowMask  = [1.0, 0, 0.7, 0, 0.8, 0];
 	var lowPitch = [1/2, 3/5, 8/9, 3/4, 3/5, 2/3];
 	// polymeter-004's outro arp, note for note: six steps, so it rotates
 	var bellMask  = [1, 0.7, 0.9, 0.6, 0.85, 0.8];
@@ -79,29 +72,21 @@
 
 	var clk, harpTrig, harpVel, harpF, harp, harp2Trig, harp2Vel, harp2F, harp2;
 	var lowTrig, lowVel, lowF, low, bellTrig, bellF, bell;
-	var dropGate, harpGate, harp2Gate, lowGate, lowFast, harpDel, delFade, mix, master;
+	var breakGate, harpDel, delFade, mix, master;
 
 	RandSeed.ir(1, 20260916);    // reproducible renders
 
 	clk = Impulse.ar(q * 2);     // the eighth-note clock: 9 steps to the bar
 
-	// bars 89-97: everything stops. Each layer has its own way back in, so
-	// the second section assembles itself over the low pluck's new cycle.
-	// (10 ms of gate grace so entry hits aren't lost to control-block timing)
-	dropGate  = (elapsed < (88 * barDur)) + (elapsed >= (112 * barDur));
-	harpGate  = ((elapsed >= ((8 * barDur) - 0.01)) * (elapsed < (88 * barDur)))
-	+ (elapsed >= ((104 * barDur) - 0.01));
-	harp2Gate = ((elapsed >= ((48 * barDur) - 0.01)) * (elapsed < (88 * barDur)))
-	+ (elapsed >= ((120 * barDur) - 0.01));
-	lowGate   = ((elapsed >= ((24 * barDur) - 0.01)) * (elapsed < (88 * barDur)))
-	+ (elapsed >= ((96 * barDur) - 0.01));
-	lowFast   = elapsed >= ((96 * barDur) - 0.01);
+	// the breakdown, bars 97-109: everything but the harpsichord steps out
+	breakGate = (elapsed < (96 * barDur)) + (elapsed >= (108 * barDur));
 
 	// ---- the harpsichord: two plucked courses an octave apart ----
 	// Pluck with a low coef rings bright and long-ish; the pair at f and 2f is
 	// the 8' and 4' course, and the noise tick on top is the jack's clatter,
 	// which is what makes a harpsichord read as plucked rather than struck.
-	harpTrig = clk * harpGate * Demand.ar(clk, 0, Dseq(harpMask, inf));
+	harpTrig = clk * (elapsed >= ((8 * barDur) - 0.01))
+	* Demand.ar(clk, 0, Dseq(harpMask, inf));
 	harpVel = Latch.ar(harpTrig, harpTrig);
 	harpF = (fund * Demand.ar(harpTrig, 0, Dseq(harpPitch, inf))).max(20);
 	harp = Pluck.ar(WhiteNoise.ar(0.8), harpTrig, 0.05, 1/harpF, 1.4, 0.18)
@@ -109,19 +94,17 @@
 	harp = harp + (HPF.ar(WhiteNoise.ar(Decay2.ar(harpTrig, 0.0005, 0.008)), 4000) * 0.5);
 	harp = (harp * 1.6).tanh * Lag.ar(harpVel, 0.002);
 
-	harp2Trig = clk * harp2Gate * Demand.ar(clk, 0, Dseq(harp2Mask, inf));
+	harp2Trig = clk * (elapsed >= ((48 * barDur) - 0.01)) * breakGate
+	* Demand.ar(clk, 0, Dseq(harp2Mask, inf));
 	harp2Vel = Latch.ar(harp2Trig, harp2Trig);
 	harp2F = (fund * Demand.ar(harp2Trig, 0, Dseq(harp2Pitch, inf))).max(20);
 	harp2 = Pluck.ar(WhiteNoise.ar(0.7), harp2Trig, 0.05, 1/harp2F, 1.1, 0.2);
 	harp2 = harp2 + (HPF.ar(WhiteNoise.ar(Decay2.ar(harp2Trig, 0.0005, 0.006)), 5000) * 0.4);
 	harp2 = (harp2 * 1.4).tanh * Lag.ar(harp2Vel, 0.002);
 
-	// ---- the low pluck: the bar's heads, then its own six-step cycle ----
-	// both patterns run on the same clock the whole time, so neither loses
-	// its place; the switch at bar 97 only chooses which one is heard
-	lowTrig = clk * lowGate * (
-		(Demand.ar(clk, 0, Dseq(lowMaskA, inf)) * (1 - lowFast))
-		+ (Demand.ar(clk, 0, Dseq(lowMaskB, inf)) * lowFast));
+	// ---- the low pluck: six steps against the bar's nine ----
+	lowTrig = clk * (elapsed >= ((24 * barDur) - 0.01)) * breakGate
+	* Demand.ar(clk, 0, Dseq(lowMask, inf));
 	lowVel = Latch.ar(lowTrig, lowTrig);
 	lowF = (fund * Demand.ar(lowTrig, 0, Dseq(lowPitch, inf))).max(20);
 	low = Pluck.ar(WhiteNoise.ar(0.8), lowTrig, 0.05, 1/lowF, 2.2, 0.4);
@@ -130,7 +113,7 @@
 
 	// ---- polymeter-003's bell on polymeter-004's outro arp ----
 	// six steps against the harpsichord's nine: the two meet every two bars
-	bellTrig = clk * dropGate * Demand.ar(clk, 0, Dseq(bellMask, inf));
+	bellTrig = clk * Demand.ar(clk, 0, Dseq(bellMask, inf));
 	bellF = Latch.ar(fund * Demand.ar(clk, 0, Dseq(bellPitch, inf)), bellTrig).max(20);
 	bell = (SinOsc.ar(bellF, 0, Decay2.ar(bellTrig, 0.002, 0.6))
 		+ (SinOsc.ar(bellF * 3, 0, Decay2.ar(bellTrig, 0.002, 0.25)) * 0.4)) * 0.8;
@@ -140,12 +123,10 @@
 	// next group's head and the figure answers itself across the bar. It opens
 	// from bar 17 and deepens through the breakdown.
 	delFade = ((elapsed - (16 * barDur)) / (8 * barDur)).clip(0, 1);
-	// through the gap at bars 89-97 the comb is pushed long, so what carries
-	// the drop-out is the harpsichord's own echoes ringing down
 	harpDel = CombC.ar(HPF.ar(harp + (harp2 * 0.5), 400), 0.6, 3 * e8,
-		3 + (9 * (1 - dropGate)));
+		3 + (6 * (1 - breakGate)));
 	harpDel = BHiShelf.ar(harpDel, 2500, 1, 4) * delFade
-	* (delAmp * (1 + (0.8 * (1 - dropGate))));
+	* (delAmp * (1 + (0.8 * (1 - breakGate))));
 
 	mix = Pan2.ar(harp, -0.12, harpAmp) + Pan2.ar(harp2, 0.3, harp2Amp)
 	+ Pan2.ar(harpDel, 0.25) + Pan2.ar(low, 0, lowAmp)

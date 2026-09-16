@@ -47,3 +47,8 @@ harpsichord's comb is pushed long, so its echoes ring down through an eight-bar
 gap. The second section builds from bar 97 over the faster six-step cycle:
 the low pluck alone, the harpsichord at 105, the bell at 113, the second voice
 at 121. 160 bars now, ~4:14.*
+
+> Actually not nice anyway. Remove the new section.
+
+*Reverted: back to one continuous piece, the low pluck on its six-step cycle
+with the six-note line.*
