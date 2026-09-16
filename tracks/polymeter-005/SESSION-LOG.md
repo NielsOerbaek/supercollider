@@ -34,3 +34,16 @@ just intonation on E.*
 it runs six, so it rotates against the waltz and comes round with it every two
 bars, in step with the bell; three hits per cycle over six notes (E1 G1 D2 B1
 G1 A1), so the line itself takes four bars to repeat.*
+
+> ah, sorry, i did not mean 6 steps, but six notes, so double of the previous
+> length. But i like the new pattern as well. Lets do a second section where
+> everything drops out and where the bass reenters with this new faster
+> pattern and where the elements reenter over that.
+
+*Both, then. Section 1 puts the low pluck back on the bar's three heads but
+keeps a six-note line — E1 G1 D2 B1 G1 A1, twice the length it started with —
+so it takes two bars to come round. At bar 89 everything stops and the
+harpsichord's comb is pushed long, so its echoes ring down through an eight-bar
+gap. The second section builds from bar 97 over the faster six-step cycle:
+the low pluck alone, the harpsichord at 105, the bell at 113, the second voice
+at 121. 160 bars now, ~4:14.*

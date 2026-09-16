@@ -6,7 +6,7 @@
 // 9 eighths, not 4 quarters.
 (
 var bpm = 170;
-var bars = 144;                                   // 9/8 bars (graph total)
+var bars = 160;                                   // 9/8 bars (graph total)
 var duration = ((bars * 9 * (30 / bpm)) + 3).roundUp;
 
 var dir = thisProcess.nowExecutingPath.notNil.if(
