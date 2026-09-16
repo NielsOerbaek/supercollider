@@ -5,7 +5,7 @@
 // pre-drop bars 62-64), drop B 64-136 with the guitar wall from bar 88, a new
 // drumless break 136-144, a new second drop 144-252 with the guitar at full
 // crush — split by a second break at 196-204 — then the crushed drums
-// dissolving alone 252-284, the last 16 bars under 004's opening. Grid zero is this synth's first sample.
+// dissolving alone 265-297, the last 8 bars under 004's opening. Grid zero is this synth's first sample.
 //
 // 12/8 glitch groove at quarter = 170: the polymeter-1 drum rack re-grooved
 // into a syncopated 12/8, a blip melody on a 10-sixteenth (5/8) cycle that
@@ -17,7 +17,7 @@
 	var q = 170/60;              // tempo: quarter = 170
 	var e8 = 1 / (q * 2);        // eighth-note duration in seconds
 	var clk = Impulse.ar(q * 2); // the eighth-note clock
-	var total = 3024 * e8;       // 252 bars of 12/8 — the full-mix arc (~8:54)
+	var total = 3180 * e8;       // 265 bars of 12/8 — the full-mix arc (~9:21)
 	var outroLen = 384 * e8;     // 32 more bars: the crushed drums alone, dissolving
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — JI fundamental, same family as track 1

@@ -5,48 +5,38 @@
   "latencySamples": 960,
   "parts": [
     {
-      "name": "003a",
-      "start": 0,
-      "length": 928,
-      "gainDb": 5.3,
-      "fadeIn": 0,
-      "fadeOut": 16,
-      "targetLufs": -21,
-      "lockCheck": "clock"
-    },
-    {
       "name": "001",
-      "start": 672,
-      "length": 2248,
+      "start": 0,
+      "length": 2184,
       "gainDb": 0.6,
       "fadeIn": 0,
-      "fadeOut": 16,
+      "fadeOut": 64,
       "targetLufs": -17
     },
     {
       "name": "003b",
-      "start": 2792,
-      "length": 960,
-      "gainDb": 8.0,
+      "start": 2120,
+      "length": 896,
+      "gainDb": 7.8,
       "fadeIn": 0,
-      "fadeOut": 16,
+      "fadeOut": 64,
       "targetLufs": -20,
       "lockCheck": "clock"
     },
     {
       "name": "002",
-      "start": 3624,
-      "length": 3408,
-      "gainDb": 1.9,
+      "start": 2952,
+      "length": 3564,
+      "gainDb": 1.8,
       "fadeIn": 0,
-      "fadeOut": 16,
+      "fadeOut": 96,
       "targetLufs": -16
     },
     {
       "name": "004",
-      "start": 6840,
-      "length": 3360,
-      "gainDb": -1.0,
+      "start": 6420,
+      "length": 3780,
+      "gainDb": -0.8,
       "fadeIn": 0,
       "fadeOut": 0,
       "targetLufs": -16

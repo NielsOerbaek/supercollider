@@ -46,20 +46,6 @@ def test_stem_beat_lock(part):
     assert res["ok"], res
 
 
-# ---- 003a (4/4, bar = 8 eighths) ----
-# The build is measured above 300 Hz: voice 1's drone pluck (41-164 Hz, with a
-# sub-octave sine) carries most of the energy, so eight lighter, higher voices
-# arriving on top barely move the full-band level (+0.5..1.6 dB measured).
-# The duo comparison stays full-band.
-def test_003a_builds_then_thins_to_the_duo():
-    alone = level("003a", 0, 7 * 8, lo=300)             # voice 1 alone
-    full_hi = level("003a", 66 * 8, 82 * 8, lo=300)     # all nine
-    full = level("003a", 66 * 8, 82 * 8)
-    duo = level("003a", 108 * 8 + 4, 112 * 8)           # glass + tick
-    assert full_hi - alone >= 10
-    assert full - duo >= 6
-
-
 # ---- 003b (4/4) ----
 def test_003b_phasing_hold_then_duo():
     alone = level("003b", 0, 5 * 8, lo=300)

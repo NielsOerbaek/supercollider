@@ -73,3 +73,14 @@ RMS), ahead of make_mp3.sh's normalization. The lock check now drops windows
 far from a stem's median lag before fitting drift: 002's dissolve crusher,
 sampling at a few hundred Hz by the end, holds its last transients back ~12
 ms, which is the effect, not the clock.*
+
+> For the running mix, we should remove the first rhytmicon section, so we go
+> straight to 001. And we can have a little less overlap between tracks, but
+> the fades should be longer.
+
+*003a is gone — the mix opens on 001's drums. The overlaps shrink from 128 to
+64 eighths between 001, 003b and 002 (96 for the 002/004 crossover), and the
+assembler's fade-out grows to cover each overlap end to end, so the hand-overs
+are real crossfades rather than a short guard against a hard cut. 004 carries
+polymeter-004's new plucked E, lower riser peak, softer bass wall and long
+outro; 002 gains 13 bars so the piece still lands on exactly 30:00.0.*

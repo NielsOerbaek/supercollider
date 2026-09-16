@@ -3,7 +3,7 @@ import subprocess
 import pytest
 from conftest import TRACK
 
-PARTS = ["003a", "001", "003b", "002", "004"]
+PARTS = ["001", "003b", "002", "004"]
 
 
 @pytest.mark.parametrize("part", PARTS)
