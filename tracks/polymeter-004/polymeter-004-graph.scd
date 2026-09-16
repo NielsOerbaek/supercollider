@@ -121,7 +121,7 @@
 	// the plucked E: one note, an octave above the highest in the bass pattern
 	// (the bass tops out at E2, so this is E3), on a 10-step cell that fits
 	// three times in the bar — 1 2 1 2 1 1 2, i.e. steps 0 1 3 4 6 7 8
-	var pluckAmp = 0.3;
+	var pluckAmp = 0.85;         // measured: 0.3 left it ~21 dB under the mix
 	var arp6Amp  = 0.25;
 	var arp8Amp  = 0.25;
 	// the arps swing across each other: one pan LFO, mirrored between them,
