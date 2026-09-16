@@ -66,3 +66,8 @@ polymeter-003's voice 9, the clap polymeter-001's, on every second quarter —
 a half-time backbeat at 85. Both enter at bar 33, sit out the breakdown and
 stop for the close. At their first levels they lifted the section by only
 0.3 dB, so both went up (tick 0.35 -> 0.6, clap 0.5 -> 0.85).*
+
+> Great, but it should be the slower bass pattern.
+
+*Back to the bar's three heads, keeping the six-note line — so the low pluck
+takes two bars to come round rather than four.*

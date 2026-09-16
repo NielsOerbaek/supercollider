@@ -61,4 +61,8 @@ ffmpeg -hide_banner -loglevel error -i "$wav" -codec:a libmp3lame -q:a 2 \
 	-metadata date="$(date +%Y)" -metadata comment="$comment — render $stamp" "$out"
 rm -f "$wav" "$track/nrt.osc"
 
-echo "wrote $out"
+# also keep a copy under a static name, committed with the track, so the
+# newest render of each track is always at tracks/<name>/latest.mp3
+cp -f "$out" "$track/latest.mp3"
+
+echo "wrote $out (and $track/latest.mp3)"
