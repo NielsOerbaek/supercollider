@@ -474,3 +474,21 @@ alone, and return with the kit at bar 29 — they are still needed for the
 outro. A second drum-drive ramp starts two bars after the feedback's and adds
 +2.5 of drive by bar 44, so the kit claws back through the wall; the limiting
 that follows is left to happen.*
+
+> Notes: For 004 the noise buildup is a bit too high, if we just move it to
+> start one measure later and still cut out at the drop i think it should fit.
+> The high-feedback pluck bass should also be 15-20% lower in volume to be a
+> little less harsh. And i'd like to add a pluck pattern on an E one octave
+> above the highest in the bass pattern. Rythmically it should be something
+> like 1 2 1 2 1 1 2. I'd also like the outtro to be much longer.
+
+*The riser starts a bar into the drop and climbs at the same rate as before,
+so the cut catches it at 7/8 of the way up — about 2.3 dB lower at its peak.
+The bass layer (dry, delay and reverb together) comes down 17% across the
+feedback build and stays there. A new plucked E — polymeter-003's voice 2, the
+same Karplus pluck as the bass, an octave above its highest note at E3 — plays
+1 2 1 2 1 1 2 on a ten-step cell that fits three times in the bar (steps 0 1 3
+4 6 7 8), from the two-step section to the outro; short and bright rather than
+driven, so it reads as a figure over the part. The outro grows from two bars
+to twelve, with a six-bar fade after it, and the comb's outro decay is pushed
+to 60 s so the wall rings down across it instead of dying in the first bar.*

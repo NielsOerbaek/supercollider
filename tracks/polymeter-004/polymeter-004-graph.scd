@@ -83,8 +83,9 @@
 //           into a saturating wall; two bars behind it the drums overdrive
 //           harder to fight their way through
 //   bar 45  outro: all percussion stops and the bass stops being played —
-//           the arps run on while the wall of feedback rings down
-//   bar 47  the whole thing fades over the last two bars
+//           the arps run on for twelve bars while the wall of feedback rings
+//           down behind them
+//   bar 57  the fade, over six bars
 
 {
 	var q = 170/60;              // tempo: quarter = 170
@@ -99,7 +100,7 @@
 	                             // delay's feedback starts climbing
 	var outroBar = 44;           // all percussion stops; arps + delay feedback
 	                             // (2 bars), then 2 bars of fade to the end
-	var bars = 48;               // ~4:14
+	var bars = 62;               // ~5:28 — the outro runs 12 bars, the fade 6
 	var total = bars * barDur;
 	var elapsed = Sweep.kr(0, 1);
 	var fund = 82.407;           // E2 — the JI fundamental, as in tracks 1-3
@@ -117,6 +118,10 @@
 	var hat16Lvl = 0.42;         // the offbeat 16th drive
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
 	// both arps are the same bell voice, so the same amp lands them level
+	// the plucked E: one note, an octave above the highest in the bass pattern
+	// (the bass tops out at E2, so this is E3), on a 10-step cell that fits
+	// three times in the bar — 1 2 1 2 1 1 2, i.e. steps 0 1 3 4 6 7 8
+	var pluckAmp = 0.3;
 	var arp6Amp  = 0.25;
 	var arp8Amp  = 0.25;
 	// the arps swing across each other: one pan LFO, mirrored between them,
@@ -265,6 +270,9 @@
 	var arp8MaskAlt  = [1, 0.6, 0.85, 0.6, 0.9, 0.55, 0.8, 0.6];
 	var arp8PitchAlt = [8, 24/5, 64/9, 6, 16/3, 8, 4, 6];  // E5 G4 D5 B4 A4 E5 E4 B4 (bell, fed directly)
 
+	// the plucked E's cell, repeated three times across the bar
+	var pluckCell = [1.0, 0.6, 0, 0.9, 0.6, 0, 0.85, 0.6, 0.8, 0];
+
 	// the two arps, on the same eighth grid but in their own cycle lengths.
 	// Pitches are the same E minor pentatonic pool as the bass (E G A B D),
 	// moved up two and three octaves, so the arps spell the same harmony the
@@ -277,6 +285,7 @@
 	var arp8Pitch = [4, 64/9, 16/3, 8, 24/5, 4, 6, 64/9];  // E4 D5 A4 E5 G4 E4 B4 D5
 
 	var clk, bassTrig, bassVel, bassF, bass;
+	var pluckMask, pluckTrig, pluckVel, pluck;
 	var bassRamp, bassDecay, bassDry, bassDel, bassRev, delayFade;
 	var bassRise, bassEmerge, bassLvl, rawArc, sec1, sec2, sec3, massRamp;
 	var deepTrig, deepF, deep;
@@ -355,6 +364,9 @@
 	// feedback climbs toward self-sustaining — see below. Nothing else is
 	// turned down to make room; it is meant to get bigger.
 	massRamp  = ((elapsed - (massBar * barDur)) / ((outroBar - massBar) * barDur)).clip(0, 1);
+	// the wall was harsh: the whole bass layer comes down 17% through the
+	// build and stays there for the outro
+	bassLvl   = bassLvl * (1 - (0.17 * massRamp));
 	bassDecay = 2 + (7 * bassRamp) + (12 * massRamp);
 	bass = Pluck.ar(WhiteNoise.ar(0.8), bassTrig, 0.05, 1/bassF,
 		bassDecay, 0.4 - (0.12 * bassRamp) - (0.15 * massRamp));
@@ -384,7 +396,7 @@
 	// it is audibly dying under the arps before the master fade takes it.
 	bassDel = HPF.ar(CombC.ar(HPF.ar(bass * outroDuck, 900 - (550 * massRamp)) * 3,
 		0.6, 3 * s8, 4 + (7 * bassRamp) + (58 * massRamp * outroDuck)
-			+ (20 * (1 - outroDuck))),
+			+ (60 * (1 - outroDuck))),   // the outro is long now: ring on through it
 		500 - (320 * massRamp));
 	// the delay is silent for the first bar, blooms in across bars 2-6, and is
 	// then on for the rest of the track — so the bass states the riff clean
@@ -402,6 +414,18 @@
 	// changes character without ever actually receding, which is what a first
 	// pass at this did (net level moved 0.5 dB across the whole track).
 	bassRev = FreeVerb.ar(bass, 1, 0.85, 0.4) * (0.04 + (0.14 * bassRamp));
+
+	// ---- the plucked E, from the two-step to the outro ----
+	// polymeter-003's voice 2 again — the same Karplus pluck as the bass, an
+	// octave above its highest note — short and bright rather than driven, so
+	// it reads as a figure over the part instead of another bass line.
+	pluckMask = pluckCell ++ pluckCell ++ pluckCell;
+	pluckTrig = clk * (elapsed >= ((snareBar * barDur) - 0.01)) * outroGate
+	* Demand.ar(clk, 0, Dseq(pluckMask, inf));
+	pluckVel = Latch.ar(pluckTrig, pluckTrig);
+	pluck = Pluck.ar(WhiteNoise.ar(0.8), pluckTrig, 0.05, 1 / (fund * 2), 1.2, 0.35);
+	pluck = (pluck * 1.4).tanh * Lag.ar(pluckVel, 0.002);
+	pluck = HPF.ar(pluck, 120);
 
 	// ---- the deep bar-marker: polymeter-003's voice 1, verbatim ----
 	// sub + fundamental + a short second partial, under a 1.8 s bloom. The
@@ -583,7 +607,9 @@
 	// from ~700 Hz to ~10 kHz, wobbling slightly so it doesn't sound like a
 	// straight sweep. The gate cuts it the instant the kit returns. The
 	// 0.707 keeps its total energy where the single panned noise had it.
-	riserFade = ((elapsed - (clapBar * barDur))
+	// it starts a bar into the drop but climbs at the same rate, so the cut
+	// catches it at 7/8 of the way up — the buildup peaks ~2.3 dB lower
+	riserFade = ((elapsed - ((clapBar + 1) * barDur))
 		/ ((kitReturnBar - clapBar) * barDur)).clip(0, 1);
 	riser = LPF.ar(HPF.ar([PinkNoise.ar, PinkNoise.ar], 150),
 		700 * (14 ** riserFade) * LFNoise2.kr(0.4).exprange(0.8, 1.25));
@@ -596,6 +622,7 @@
 	mix = Pan2.ar(bassDry * bassLvl, -0.08) + Pan2.ar(bassDel * bassLvl, 0.22)
 	+ Pan2.ar(bassRev * bassLvl, -0.15)
 	+ Pan2.ar(deep, 0, deepAmp) + Pan2.ar(drums, 0.05) + Pan2.ar(clap, 0)
+	+ Pan2.ar(pluck, 0.3, pluckAmp)
 	+ Pan2.ar(arp6, arpPan.neg, arp6Amp * arpDip) + Pan2.ar(arp8, arpPan, arp8Amp * arpDip)
 	+ riser;
 	mix = FreeVerb.ar(mix, revMix, 0.75, 0.4);
@@ -609,8 +636,8 @@
 			+ (2 * (1 - (dirtArc / dirtCap)))).neg * 2)
 		* (1 + (1.8 * (dirtArc / dirtCap)))).tanh * 0.85;
 	mix = (mix * (1 - masterCrush)) + (mixCrushed * masterCrush);
-	// two bars of outro, then two bars of fade
-	master = EnvGen.kr(Env([1, 1, 0], [total - (2 * barDur), 2 * barDur], [0, -3]),
+	// twelve bars of outro, then six bars of fade
+	master = EnvGen.kr(Env([1, 1, 0], [total - (6 * barDur), 6 * barDur], [0, -3]),
 		doneAction: 2);
 	Limiter.ar(mix * 0.5, 0.9) * master;
 }
