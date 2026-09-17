@@ -118,9 +118,10 @@
 	var hat16Lvl = 0.42;         // the offbeat 16th drive
 	var clapAmp  = 1.05;         // the clap hits hard — it is carrying the half alone
 	// both arps are the same bell voice, so the same amp lands them level
-	// the plucked E: one note, an octave above the highest in the bass pattern
-	// (the bass tops out at E2, so this is E3), on a 10-step cell that fits
-	// three times in the bar — 1 2 1 2 1 1 2, i.e. steps 0 1 3 4 6 7 8
+	// the plucked E: one note, two octaves above the highest in the bass
+	// pattern (the bass tops out at E2, so this is E4), on a 10-step cell that
+	// fits three times in the bar — 1 2 1 2 1 1 2, i.e. steps 0 1 3 4 6 7 8.
+	// It holds off four bars after the two-step kit drops in.
 	var pluckAmp = 0.85;         // measured: 0.3 left it ~21 dB under the mix
 	var arp6Amp  = 0.25;
 	var arp8Amp  = 0.25;
@@ -415,15 +416,15 @@
 	// pass at this did (net level moved 0.5 dB across the whole track).
 	bassRev = FreeVerb.ar(bass, 1, 0.85, 0.4) * (0.04 + (0.14 * bassRamp));
 
-	// ---- the plucked E, from the two-step to the outro ----
+	// ---- the plucked E, from four bars after the two-step, to the outro ----
 	// polymeter-003's voice 2 again — the same Karplus pluck as the bass, an
 	// octave above its highest note — short and bright rather than driven, so
 	// it reads as a figure over the part instead of another bass line.
 	pluckMask = pluckCell ++ pluckCell ++ pluckCell;
-	pluckTrig = clk * (elapsed >= ((snareBar * barDur) - 0.01)) * outroGate
+	pluckTrig = clk * (elapsed >= (((snareBar + 4) * barDur) - 0.01)) * outroGate
 	* Demand.ar(clk, 0, Dseq(pluckMask, inf));
 	pluckVel = Latch.ar(pluckTrig, pluckTrig);
-	pluck = Pluck.ar(WhiteNoise.ar(0.8), pluckTrig, 0.05, 1 / (fund * 2), 1.2, 0.35);
+	pluck = Pluck.ar(WhiteNoise.ar(0.8), pluckTrig, 0.05, 1 / (fund * 4), 1.2, 0.35);
 	pluck = (pluck * 1.4).tanh * Lag.ar(pluckVel, 0.002);
 	pluck = HPF.ar(pluck, 120);
 

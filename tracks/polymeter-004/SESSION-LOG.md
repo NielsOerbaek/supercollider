@@ -492,3 +492,9 @@ same Karplus pluck as the bass, an octave above its highest note at E3 — plays
 driven, so it reads as a figure over the part. The outro grows from two bars
 to twelve, with a six-bar fade after it, and the comb's outro decay is pushed
 to 60 s so the wall rings down across it instead of dying in the first bar.*
+
+> The higher pluck in 004 should one octave higher and it should not appear
+> until 4 bars after the two-step drop.
+
+*E4 now — two octaves above the bass's highest note — and it holds off until
+four bars after the two-step kit drops in.*
