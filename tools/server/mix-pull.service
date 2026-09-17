@@ -1,0 +1,11 @@
+[Unit]
+Description=mix.raakode.dk git pull endpoint
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/mix.raakode.dk/pull-service.py
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target
