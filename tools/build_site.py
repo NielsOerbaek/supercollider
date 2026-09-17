@@ -7,6 +7,9 @@ from. Run it through tools/deploy-mix.sh, which also uploads the audio.
 """
 import json
 import re
+import shutil
+import subprocess
+import tempfile
 import subprocess
 from pathlib import Path
 
@@ -45,7 +48,7 @@ def tracks():
 
 
 
-TEMPLATE = """<!doctype html>
+TEMPLATE = r"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -119,6 +122,8 @@ TEMPLATE = """<!doctype html>
 __ROWS__
   </ul>
 
+  <audio id="audio" preload="none" playsinline></audio>
+
   <footer class="player">
     <div class="bar">
       <button id="prev" aria-label="Previous">&#9664;&#9664;</button>
@@ -133,11 +138,10 @@ __ROWS__
 
 <script>
 const PLAYLIST = __PLAYLIST__;
-const audio = new Audio();
-audio.preload = "none";
+const audio = $("audio");
 let current = -1;
 
-const $ = (id) => document.getElementById(id);
+function $(id) { return document.getElementById(id); }
 const fmt = (s) => isFinite(s) ? `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}` : "0:00";
 const rows = [...document.querySelectorAll("li.track")];
 
@@ -153,7 +157,7 @@ function load(i, play = true) {
     current = i;
     audio.src = PLAYLIST[i].src;
   }
-  if (play) audio.play().catch(() => {});
+  if (play) audio.play().catch((err) => { $("now").textContent = "could not play: " + err.message; });
   paint();
 }
 
@@ -193,19 +197,38 @@ document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowLeft") audio.currentTime -= 10;
 });
 
-// the git pull button: POST to the endpoint Caddy password-protects. Browsers
-// do not show the auth dialog for fetch, so a 401 falls back to opening the
-// endpoint in a tab, where they do.
+// the git pull button. fetch() never raises the browser's own password
+// dialog, and opening a tab after an await is blocked on phones, so the page
+// asks and sends the header itself, remembering it for next time.
+function remembered(key, value) {
+  try { return value === undefined ? localStorage.getItem(key)
+                                   : (value === null ? localStorage.removeItem(key)
+                                                     : localStorage.setItem(key, value)); }
+  catch (e) { return null; }
+}
+
 $("pull").addEventListener("click", async () => {
   const btn = $("pull"), status = $("pull-status");
-  btn.disabled = true; status.textContent = "pulling…";
+  let auth = remembered("mixauth");
+  if (!auth) {
+    const pw = prompt("Password for git pull (user: niels)");
+    if (!pw) return;
+    auth = "Basic " + btoa("niels:" + pw);
+  }
+  btn.disabled = true;
+  status.textContent = "pulling\u2026";
   try {
-    const r = await fetch("/api/pull", { method: "POST", credentials: "include" });
-    if (r.status === 401) { status.textContent = "sign in…"; window.open("/api/pull", "_blank"); }
-    else {
-      const text = (await r.text()).trim();
-      status.textContent = text.split("\n").pop().slice(0, 80);
-      if (r.ok) setTimeout(() => location.reload(), 1200);
+    const r = await fetch("/api/pull", { method: "POST", headers: { Authorization: auth } });
+    const text = (await r.text()).trim();
+    if (r.status === 401) {
+      remembered("mixauth", null);
+      status.textContent = "wrong password";
+    } else if (r.ok) {
+      remembered("mixauth", auth);
+      status.textContent = text.split("\n").pop().slice(0, 90);
+      setTimeout(() => location.reload(), 1800);
+    } else {
+      status.textContent = "failed: " + text.slice(0, 90);
     }
   } catch (err) {
     status.textContent = "failed: " + err.message;
@@ -213,10 +236,28 @@ $("pull").addEventListener("click", async () => {
     btn.disabled = false;
   }
 });
+
 </script>
 </body>
 </html>
 """
+
+
+def check_js(html):
+    """Parse the page's script before writing it. A template that mangles one
+    escape takes out every handler on the page, silently."""
+    js = html.split("<script>")[1].split("</script>")[0]
+    if not shutil.which("node"):
+        print("  (node missing: skipped the JS syntax check)")
+        return
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
+        f.write(js)
+        path = f.name
+    r = subprocess.run(["node", "--check", path], capture_output=True, text=True)
+    Path(path).unlink()
+    if r.returncode != 0:
+        raise SystemExit("the page's JavaScript does not parse:\n" + r.stderr)
+    print("  JS parses")
 
 
 def build():
@@ -237,6 +278,7 @@ def build():
     playlist = json.dumps(items, indent=2)
     html = TEMPLATE.replace("__ROWS__", "\n".join(rows)).replace("__PLAYLIST__", playlist)
     (REPO / "site").mkdir(exist_ok=True)
+    check_js(html)
     (REPO / "site" / "index.html").write_text(html)
     print(f"built site/index.html with {len(rows)} tracks")
 

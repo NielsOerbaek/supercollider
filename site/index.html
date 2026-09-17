@@ -98,7 +98,7 @@
       <div class="info">
         <h2>Polymeter Study No. 4</h2>
         <p class="desc">15/4 at 170: bass hears 5+5+5 over a diminished E-G-Bb, drums hear 3+3+3+3+3</p>
-        <p class="meta">5:32 &middot; 7 MB &middot; ce28065 17 Sep 2026</p>
+        <p class="meta">5:32 &middot; 7 MB &middot; 8d9e676 17 Sep 2026</p>
       </div>
     </li>
     <li class="track" data-i="4">
@@ -114,10 +114,12 @@
       <div class="info">
         <h2>Polymeter Running Mix</h2>
         <p class="desc">30 minutes at 170: polymeter-003, 001, 003 again, 002 and 004 on one locked grid</p>
-        <p class="meta">30:00 &middot; 46 MB &middot; ce28065 17 Sep 2026</p>
+        <p class="meta">30:00 &middot; 46 MB &middot; 8d9e676 17 Sep 2026</p>
       </div>
     </li>
   </ul>
+
+  <audio id="audio" preload="none" playsinline></audio>
 
   <footer class="player">
     <div class="bar">
@@ -158,11 +160,10 @@ const PLAYLIST = [
     "title": "Polymeter Running Mix"
   }
 ];
-const audio = new Audio();
-audio.preload = "none";
+const audio = $("audio");
 let current = -1;
 
-const $ = (id) => document.getElementById(id);
+function $(id) { return document.getElementById(id); }
 const fmt = (s) => isFinite(s) ? `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}` : "0:00";
 const rows = [...document.querySelectorAll("li.track")];
 
@@ -178,7 +179,7 @@ function load(i, play = true) {
     current = i;
     audio.src = PLAYLIST[i].src;
   }
-  if (play) audio.play().catch(() => {});
+  if (play) audio.play().catch((err) => { $("now").textContent = "could not play: " + err.message; });
   paint();
 }
 
@@ -218,20 +219,38 @@ document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowLeft") audio.currentTime -= 10;
 });
 
-// the git pull button: POST to the endpoint Caddy password-protects. Browsers
-// do not show the auth dialog for fetch, so a 401 falls back to opening the
-// endpoint in a tab, where they do.
+// the git pull button. fetch() never raises the browser's own password
+// dialog, and opening a tab after an await is blocked on phones, so the page
+// asks and sends the header itself, remembering it for next time.
+function remembered(key, value) {
+  try { return value === undefined ? localStorage.getItem(key)
+                                   : (value === null ? localStorage.removeItem(key)
+                                                     : localStorage.setItem(key, value)); }
+  catch (e) { return null; }
+}
+
 $("pull").addEventListener("click", async () => {
   const btn = $("pull"), status = $("pull-status");
-  btn.disabled = true; status.textContent = "pulling…";
+  let auth = remembered("mixauth");
+  if (!auth) {
+    const pw = prompt("Password for git pull (user: niels)");
+    if (!pw) return;
+    auth = "Basic " + btoa("niels:" + pw);
+  }
+  btn.disabled = true;
+  status.textContent = "pulling\u2026";
   try {
-    const r = await fetch("/api/pull", { method: "POST", credentials: "include" });
-    if (r.status === 401) { status.textContent = "sign in…"; window.open("/api/pull", "_blank"); }
-    else {
-      const text = (await r.text()).trim();
-      status.textContent = text.split("
-").pop().slice(0, 80);
-      if (r.ok) setTimeout(() => location.reload(), 1200);
+    const r = await fetch("/api/pull", { method: "POST", headers: { Authorization: auth } });
+    const text = (await r.text()).trim();
+    if (r.status === 401) {
+      remembered("mixauth", null);
+      status.textContent = "wrong password";
+    } else if (r.ok) {
+      remembered("mixauth", auth);
+      status.textContent = text.split("\n").pop().slice(0, 90);
+      setTimeout(() => location.reload(), 1800);
+    } else {
+      status.textContent = "failed: " + text.slice(0, 90);
     }
   } catch (err) {
     status.textContent = "failed: " + err.message;
@@ -239,6 +258,7 @@ $("pull").addEventListener("click", async () => {
     btn.disabled = false;
   }
 });
+
 </script>
 </body>
 </html>
