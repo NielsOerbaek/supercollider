@@ -81,6 +81,11 @@ TEMPLATE = r"""<!doctype html>
          border-block:.45rem solid transparent; margin-left:.2rem; }
   li.track.playing .ico { border:0; width:.65rem; height:.7rem; margin:0;
          border-left:.22rem solid currentColor; border-right:.22rem solid currentColor; }
+  li.track.loading .ico { border:.18rem solid var(--line); border-top-color:var(--accent);
+         border-radius:50%; width:1.05rem; height:1.05rem; margin:0;
+         animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .now.loading { color:var(--dim); }
   .info { min-width:0; }
   h2 { font-size:1rem; margin:0; font-weight:600; }
   .desc { margin:.2rem 0 0; font-size:.85rem; opacity:.8; }
@@ -140,21 +145,28 @@ __ROWS__
 const PLAYLIST = __PLAYLIST__;
 const audio = $("audio");
 let current = -1;
+let loading = false;
 
 function $(id) { return document.getElementById(id); }
 const fmt = (s) => isFinite(s) ? `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}` : "0:00";
 const rows = [...document.querySelectorAll("li.track")];
 
 function paint() {
-  rows.forEach((r, i) => r.classList.toggle("playing", i === current && !audio.paused));
+  rows.forEach((r, i) => {
+    r.classList.toggle("playing", i === current && !audio.paused && !loading);
+    r.classList.toggle("loading", i === current && loading);
+  });
   $("toggle").innerHTML = audio.paused ? "&#9654;" : "&#10074;&#10074;";
-  $("now").textContent = current < 0 ? "Nothing playing" : PLAYLIST[current].title;
+  $("now").classList.toggle("loading", loading);
+  $("now").textContent = current < 0 ? "Nothing playing"
+    : PLAYLIST[current].title + (loading ? " \u2014 loading\u2026" : "");
 }
 
 function load(i, play = true) {
   if (i < 0 || i >= PLAYLIST.length) return;
   if (i !== current) {
     current = i;
+    loading = true;               // nothing is buffered yet: preload is "none"
     audio.src = PLAYLIST[i].src;
   }
   if (play) audio.play().catch((err) => { $("now").textContent = "could not play: " + err.message; });
@@ -176,6 +188,13 @@ $("prev").addEventListener("click", () => audio.currentTime > 3 ? (audio.current
 $("next").addEventListener("click", () => load(current + 1));
 audio.addEventListener("ended", () => load(current + 1));
 ["play", "pause"].forEach((e) => audio.addEventListener(e, paint));
+["canplay", "playing"].forEach((e) => audio.addEventListener(e, () => { loading = false; paint(); }));
+audio.addEventListener("waiting", () => { loading = true; paint(); });
+audio.addEventListener("error", () => {
+  loading = false;
+  paint();
+  $("now").textContent = "could not load: " + (current < 0 ? "" : PLAYLIST[current].title);
+});
 
 audio.addEventListener("timeupdate", () => {
   $("cur").textContent = fmt(audio.currentTime);
